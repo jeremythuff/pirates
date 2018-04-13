@@ -16,13 +16,14 @@ class PIRATES_API AShipPaperCharacter : public APaperCharacter
 
 	static FName RiggingComponentName;
 
-	private:
+private:
 
 
-	UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Category = "Character", EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	class UPaperFlipbookComponent* ShipRigging;
 
-	public:
+public:
 
-		FORCEINLINE class UPaperFlipbookComponent* GetShipRigging() const { return ShipRigging; }
+	FORCEINLINE class UPaperFlipbookComponent* GetShipRigging() const { return ShipRigging; }
+
 };
