@@ -9,6 +9,7 @@
 UCLASS()
 class PIRATES_API AShipPawn : public APawn
 {
+
 	GENERATED_BODY()
 
 	// Name of the Sprite component
@@ -30,6 +31,12 @@ private:
 	UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UPaperFlipbookComponent* RiggingSprite;
 
+#if WITH_EDITORONLY_DATA
+	/** Component shown in the editor only to indicate character facing */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
+		class UArrowComponent* ShipForward;
+#endif
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -47,5 +54,10 @@ public:
 
 	/** Returns RiggingSprite subobject **/
 	FORCEINLINE class UPaperFlipbookComponent* GetRiggingSprite() const { return RiggingSprite; }
+
+#if WITH_EDITORONLY_DATA
+	/** Returns ArrowComponent subobject **/
+	class UArrowComponent* GetArrowComponent() const { return ShipForward; }
+#endif
 	
 };

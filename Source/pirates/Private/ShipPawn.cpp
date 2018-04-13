@@ -2,6 +2,7 @@
 
 #include "ShipPawn.h"
 #include "PaperFlipbookComponent.h"
+#include "Components/ArrowComponent.h"
 
 FName AShipPawn::HullSpriteComponentName(TEXT("HullSprite"));
 FName AShipPawn::RiggingSpriteComponentName(TEXT("RiggingSprite"));
@@ -12,6 +13,13 @@ AShipPawn::AShipPawn()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	if (!RootComponent) {
+		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ShipRoot"));
+	}
+
+	ShipForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+	ShipForward->SetupAttachment(RootComponent);
+
 	// Try to create the hull sprite component
 	HullSprite = CreateOptionalDefaultSubobject<UPaperFlipbookComponent>(AShipPawn::HullSpriteComponentName);
 	if (HullSprite)
@@ -21,7 +29,7 @@ AShipPawn::AShipPawn()
 		//HullSprite->bOwnerNoSee = false;
 		//HullSprite->bAffectDynamicIndirectLighting = true;
 		//HullSprite->PrimaryComponentTick.TickGroup = TG_PrePhysics;
-		HullSprite->SetupAttachment(GetRootComponent());
+		HullSprite->SetupAttachment(ShipForward);
 		//static FName CollisionProfileName(TEXT("CharacterMesh"));
 		//HullSprite->SetCollisionProfileName(CollisionProfileName);
 		//HullSprite->bGenerateOverlapEvents = false;
@@ -64,4 +72,5 @@ void AShipPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
 
