@@ -1,11 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ShipPawn.h"
-#include "PaperFlipbookComponent.h"
 #include "Components/ArrowComponent.h"
+#include "PaperSpriteComponent.h"
 
 FName AShipPawn::HullSpriteComponentName(TEXT("HullSprite"));
-FName AShipPawn::RiggingSpriteComponentName(TEXT("RiggingSprite"));
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -14,14 +13,13 @@ AShipPawn::AShipPawn()
 	PrimaryActorTick.bCanEverTick = true;
 
 	if (!RootComponent) {
-		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ShipRoot"));
+		RootComponent = ShipForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+	} else {
+		ShipForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	}
 
-	ShipForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
-	ShipForward->SetupAttachment(RootComponent);
-
 	// Try to create the hull sprite component
-	HullSprite = CreateOptionalDefaultSubobject<UPaperFlipbookComponent>(AShipPawn::HullSpriteComponentName);
+	HullSprite = CreateOptionalDefaultSubobject<UPaperSpriteComponent>(AShipPawn::HullSpriteComponentName);
 	if (HullSprite)
 	{
 		//HullSprite->AlwaysLoadOnClient = true;
@@ -30,21 +28,6 @@ AShipPawn::AShipPawn()
 		//HullSprite->bAffectDynamicIndirectLighting = true;
 		//HullSprite->PrimaryComponentTick.TickGroup = TG_PrePhysics;
 		HullSprite->SetupAttachment(ShipForward);
-		//static FName CollisionProfileName(TEXT("CharacterMesh"));
-		//HullSprite->SetCollisionProfileName(CollisionProfileName);
-		//HullSprite->bGenerateOverlapEvents = false;
-	}
-
-	// Try to create the rigging sprite component
-	RiggingSprite = CreateOptionalDefaultSubobject<UPaperFlipbookComponent>(AShipPawn::RiggingSpriteComponentName);
-	if (RiggingSprite)
-	{
-		//HullSprite->AlwaysLoadOnClient = true;
-		//HullSprite->AlwaysLoadOnServer = true;
-		//HullSprite->bOwnerNoSee = false;
-		//HullSprite->bAffectDynamicIndirectLighting = true;
-		//HullSprite->PrimaryComponentTick.TickGroup = TG_PrePhysics;
-		RiggingSprite->SetupAttachment(HullSprite);
 		//static FName CollisionProfileName(TEXT("CharacterMesh"));
 		//HullSprite->SetCollisionProfileName(CollisionProfileName);
 		//HullSprite->bGenerateOverlapEvents = false;
@@ -63,7 +46,6 @@ void AShipPawn::BeginPlay()
 void AShipPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input

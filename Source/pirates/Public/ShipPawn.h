@@ -15,9 +15,6 @@ class PIRATES_API AShipPawn : public APawn
 	// Name of the Sprite component
 	static FName HullSpriteComponentName;
 
-	// Name of the Sprite component
-	static FName RiggingSpriteComponentName;
-
 public:
 	// Sets default values for this pawn's properties
 	AShipPawn();
@@ -25,11 +22,7 @@ public:
 private:
 	/** The main Sprite Flipbook associated with the (optional sub-object). */
 	UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class UPaperFlipbookComponent* HullSprite;
-
-	/** The rigging Sprite Flipbook associated with the (optional sub-object). */
-	UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class UPaperFlipbookComponent* RiggingSprite;
+		class UPaperSpriteComponent * HullSprite;
 
 #if WITH_EDITORONLY_DATA
 	/** Component shown in the editor only to indicate character facing */
@@ -50,14 +43,11 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	/** Returns HullSprite subobject **/
-	FORCEINLINE class UPaperFlipbookComponent* GetHullSprite() const { return HullSprite; }
-
-	/** Returns RiggingSprite subobject **/
-	FORCEINLINE class UPaperFlipbookComponent* GetRiggingSprite() const { return RiggingSprite; }
+	FORCEINLINE class UPaperSpriteComponent * GetHullSprite() const { return HullSprite; }
 
 #if WITH_EDITORONLY_DATA
 	/** Returns ArrowComponent subobject **/
-	class UArrowComponent* GetArrowComponent() const { return ShipForward; }
+	class UArrowComponent* GetShipForward() const { return ShipForward; }
 #endif
 	
 };
