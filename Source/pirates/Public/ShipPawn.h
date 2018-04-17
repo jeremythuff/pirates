@@ -15,14 +15,21 @@ class PIRATES_API AShipPawn : public APawn
 	// Name of the Sprite component
 	static FName HullSpriteComponentName;
 
+	// Name of the Rigging Sprite Actor
+	static FName RiggingActorName;
+
 public:
 	// Sets default values for this pawn's properties
 	AShipPawn();
 
 private:
-	/** The main Sprite Flipbook associated with the (optional sub-object). */
+	/** The main Sprite associated with the (optional sub-object). */
 	UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UPaperSpriteComponent * HullSprite;
+
+	/** The rigging actor associated with the (optional sub-object). */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true", MetaClass = "ARiggingActor"))
+		class UChildActorComponent* ShipRigging;
 
 #if WITH_EDITORONLY_DATA
 	/** Component shown in the editor only to indicate character facing */
@@ -44,6 +51,9 @@ public:
 	
 	/** Returns HullSprite subobject **/
 	FORCEINLINE class UPaperSpriteComponent * GetHullSprite() const { return HullSprite; }
+
+	/** Returns RiggingComponent subobject **/
+	/*FORCEINLINE class UChildActorComponent* GetShipRiggingActor() const { return ShipRiggingActor; } */
 
 #if WITH_EDITORONLY_DATA
 	/** Returns ArrowComponent subobject **/

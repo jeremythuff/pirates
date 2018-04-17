@@ -3,8 +3,10 @@
 #include "ShipPawn.h"
 #include "Components/ArrowComponent.h"
 #include "PaperSpriteComponent.h"
+#include "RiggingActor.h"
 
 FName AShipPawn::HullSpriteComponentName(TEXT("HullSprite"));
+FName AShipPawn::RiggingActorName(TEXT("RiggingActor"));
 
 // Sets default values
 AShipPawn::AShipPawn()
@@ -12,10 +14,12 @@ AShipPawn::AShipPawn()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	UArrowComponent* arrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+
 	if (!RootComponent) {
-		RootComponent = ShipForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+		RootComponent = ShipForward = arrowComponent;
 	} else {
-		ShipForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+		ShipForward = arrowComponent;
 	}
 
 	// Try to create the hull sprite component
@@ -33,13 +37,16 @@ AShipPawn::AShipPawn()
 		//HullSprite->bGenerateOverlapEvents = false;
 	}
 
+	ShipRigging = CreateOptionalDefaultSubobject<UChildActorComponent>(AShipPawn::RiggingActorName);
+	
+	ShipRigging->SetupAttachment(HullSprite);
+
 }
 
 // Called when the game starts or when spawned
 void AShipPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
