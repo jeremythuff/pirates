@@ -6,6 +6,19 @@
 #include "GameFramework/Pawn.h"
 #include "ShipPawn.generated.h"
 
+// Input Management
+//USTRUCT()
+//struct FShipInput {
+//	GENERATED_BODY()
+//
+//public:
+//
+//	// Sanatize movement input
+//	UPROPERTY(Category = "Ship Input", VisibleAnywhere, BlueprintReadOnly);
+//	FVector2D movementInput;
+//
+//};
+
 UCLASS()
 class PIRATES_API AShipPawn : public APawn
 {
@@ -31,6 +44,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true", MetaClass = "ARiggingActor"))
 		class UChildActorComponent* ShipRigging;
 
+	/** The Camera. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
+		class UCameraComponent* ShipCamera;
+
 #if WITH_EDITORONLY_DATA
 	/** Component shown in the editor only to indicate character facing */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
@@ -40,6 +57,12 @@ private:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// The rotate action
+	void Rotate(float AxisValue);
+
+	// The move forward action
+	void MoveForward(float AxisValue);
 
 public:	
 

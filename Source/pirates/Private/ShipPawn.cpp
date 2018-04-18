@@ -2,7 +2,10 @@
 
 #include "ShipPawn.h"
 #include "Components/ArrowComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 #include "PaperSpriteComponent.h"
+#include "Components/InputComponent.h"
 #include "RiggingActor.h"
 
 FName AShipPawn::HullSpriteComponentName(TEXT("HullSprite"));
@@ -37,8 +40,25 @@ AShipPawn::AShipPawn()
 		//HullSprite->bGenerateOverlapEvents = false;
 	}
 
+	USpringArmComponent* SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->TargetArmLength = 500.0f;
+	SpringArm->bEnableCameraLag = true;
+	SpringArm->bEnableCameraRotationLag = false;
+	SpringArm->bUsePawnControlRotation = false;
+	SpringArm->CameraLagSpeed = 2.0f;
+	SpringArm->bDoCollisionTest = false;
+	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->SetWorldRotation(FRotator(-90.0f, 0.0f, 0.0f));
+
+	ShipCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ShipCamera"));
+	ShipCamera->bUsePawnControlRotation = false;
+	ShipCamera->ProjectionMode = ECameraProjectionMode::Orthographic;
+	ShipCamera->OrthoWidth = 1024.0f;
+	ShipCamera->AspectRatio = 3.0f / 4.0f;
+	ShipCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	ShipCamera->SetWorldRotation(FRotator(-90.0f, 0.0f, 0.0f));
+
 	ShipRigging = CreateOptionalDefaultSubobject<UChildActorComponent>(AShipPawn::RiggingActorName);
-	
 	ShipRigging->SetupAttachment(HullSprite);
 
 }
@@ -60,6 +80,18 @@ void AShipPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	InputComponent->BindAxis("Rotate", this, &AShipPawn::Rotate);
+	InputComponent->BindAxis("MoveForward", this, &AShipPawn::MoveForward);
+
 }
 
+void AShipPawn::Rotate(float AxisValue) {
+
+
+
+}
+
+void AShipPawn::MoveForward(float AxisValue) {
+
+}
 
