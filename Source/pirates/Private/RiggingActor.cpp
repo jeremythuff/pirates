@@ -11,6 +11,7 @@ ARiggingActor::ARiggingActor()
 	PrimaryActorTick.bCanEverTick = true;
 
 	RootComponent = RiggingForward = CreateDefaultSubobject<UArrowComponent>(TEXT("RiggingForward"));
+	RootComponent->SetMobility(EComponentMobility::Movable);
 
 	MainMastSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("MainMastSprite"));
 	MainMastSprite->SetupAttachment(RiggingForward);

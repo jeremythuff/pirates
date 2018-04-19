@@ -7,17 +7,25 @@
 #include "ShipPawn.generated.h"
 
 // Input Management
-//USTRUCT()
-//struct FShipInput {
-//	GENERATED_BODY()
-//
-//public:
-//
-//	// Sanatize movement input
-//	UPROPERTY(Category = "Ship Input", VisibleAnywhere, BlueprintReadOnly);
-//	FVector2D movementInput;
-//
-//};
+USTRUCT(BlueprintType)
+struct FShipInput {
+	GENERATED_BODY()
+
+public:
+
+	// Sanatize movement input
+	UPROPERTY(Category = "Ship Input", VisibleAnywhere, BlueprintReadWrite)
+	FVector2D MovementInput;
+
+	void Sanitize();
+	void Rotate(float AxisValue);
+	void MoveForward(float AxisValue);
+
+private:
+	// Raw data
+	FVector2D RawMovementInput;
+
+};
 
 UCLASS()
 class PIRATES_API AShipPawn : public APawn
@@ -63,6 +71,18 @@ protected:
 
 	// The move forward action
 	void MoveForward(float AxisValue);
+
+	/** The Input Struct. */
+	UPROPERTY(Category = "Ship Input", VisibleAnywhere, BlueprintReadOnly)
+		FShipInput ShipInput;
+
+	/** Maximum yaw rotation. */
+	UPROPERTY(Category = "Ship", EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
+		float YawSpeed;
+
+	/** Maximum rate of movement. */
+	UPROPERTY(Category = "Ship", EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
+		float ShipSpeed;
 
 public:	
 
