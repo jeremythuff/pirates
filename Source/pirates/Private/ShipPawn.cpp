@@ -12,21 +12,6 @@
 FName AShipPawn::HullSpriteComponentName(TEXT("HullSprite"));
 FName AShipPawn::RiggingActorName(TEXT("RiggingActor"));
 
-
-void FShipInput::Sanitize() {
-	MovementInput = RawMovementInput.ClampAxes(-1.0f, 1.0f);
-	MovementInput = MovementInput.GetSafeNormal();
-	RawMovementInput.Set(0.0f, 0.0f);
-}
-
-void FShipInput::Rotate(float AxisValue) {
-	RawMovementInput.X = AxisValue;
-}
-
-void FShipInput::MoveForward(float AxisValue) {
-	RawMovementInput.Y = AxisValue;
-}
-
 // Sets default values
 AShipPawn::AShipPawn()
 {
@@ -34,15 +19,12 @@ AShipPawn::AShipPawn()
 	PrimaryActorTick.bCanEverTick = true;
 
 	UArrowComponent* arrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
-	arrowComponent->SetMobility(EComponentMobility::Movable);
 
 	if (!RootComponent) {
 		RootComponent = ShipForward = arrowComponent;
 	} else {
 		ShipForward = arrowComponent;
 	}
-
-	
 
 	// Try to create the hull sprite component
 	HullSprite = CreateOptionalDefaultSubobject<UPaperSpriteComponent>(AShipPawn::HullSpriteComponentName);
@@ -86,6 +68,7 @@ AShipPawn::AShipPawn()
 void AShipPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	RootComponent->SetMobility(EComponentMobility::Movable);
 }
 
 // Called every frame
@@ -97,27 +80,23 @@ void AShipPawn::Tick(float DeltaTime)
 	
 	// Move the Ship
 	{
-		UE_LOG(LogTemp, Warning, TEXT("0"));
 		FVector DesiredMovementDirection = FVector(ShipInput.MovementInput.X, ShipInput.MovementInput.Y, 0.0);
 		if (!DesiredMovementDirection.IsNearlyZero()) {
-
-			UE_LOG(LogTemp, Warning, TEXT("1"));
 			
 			// Rotate the Ship!
 			FRotator MovementAngle = DesiredMovementDirection.Rotation();
 			float DeltaYaw = UShipStatics::FindDeltaAngleDegrees(ShipForward->GetComponentRotation().Yaw, MovementAngle.Yaw);
 			if (DeltaYaw != 0.0f) {
 
-				UE_LOG(LogTemp, Warning, TEXT("2"));
-
 				float MaxYawThisFrame = YawSpeed * DeltaTime;
+				UE_LOG(LogTemp, Warning, TEXT("Rotating %f >= %f"), MaxYawThisFrame, FMath::Abs(DeltaYaw));
 				if (MaxYawThisFrame >= FMath::Abs(DeltaYaw)) {
-					UE_LOG(LogTemp, Warning, TEXT("3"));
+					UE_LOG(LogTemp, Warning, TEXT("Rotating 2"));
 					ShipForward->SetWorldRotation(MovementAngle);
 				}
 				else {
 					// Can't Reach Desired angle this frame.
-					ShipForward->AddLocalRotation(FRotator(0.0f, FMath::Sign(DeltaYaw) * MaxYawThisFrame, 0.0f));
+					ShipForward->AddLocalRotation(FRotator(0.0f, FMath::Sign(DeltaYaw) * YawSpeed, 0.0f));
 				}
 			}
 
@@ -126,7 +105,6 @@ void AShipPawn::Tick(float DeltaTime)
 			FVector Pos = GetActorLocation();
 			Pos.X += MovementDirection.X + ShipSpeed * DeltaTime;
 			Pos.Y += MovementDirection.Y + ShipSpeed * DeltaTime;
-
 			SetActorLocation(Pos);
 
 		}
@@ -138,20 +116,29 @@ void AShipPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	InputComponent->BindAxis("Rotate", this, &AShipPawn::Rotate);
-	InputComponent->BindAxis("MoveForward", this, &AShipPawn::MoveForward);
-
+	InputComponent->BindAxis("MoveX", this, &AShipPawn::MoveX);
+	InputComponent->BindAxis("MoveY", this, &AShipPawn::MoveY);
 }
 
-void AShipPawn::Rotate(float AxisValue) {
-
-	ShipInput.Rotate(AxisValue);
-
+void AShipPawn::MoveX(float AxisValue) {
+	ShipInput.MoveX(AxisValue);
 }
 
-void AShipPawn::MoveForward(float AxisValue) {
+void AShipPawn::MoveY(float AxisValue) {
+	ShipInput.MoveY(AxisValue);
+}
 
-	ShipInput.MoveForward(AxisValue);
+void FShipInput::Sanitize() {
+	MovementInput = RawMovementInput.ClampAxes(-1.0f, 1.0f);
+	MovementInput = MovementInput.GetSafeNormal();
+	RawMovementInput.Set(0.0f, 0.0f);
+}
 
+void FShipInput::MoveX(float AxisValue) {
+	RawMovementInput.X = AxisValue;
+}
+
+void FShipInput::MoveY(float AxisValue) {
+	RawMovementInput.Y = AxisValue;
 }
 

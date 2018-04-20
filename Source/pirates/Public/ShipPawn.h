@@ -18,8 +18,8 @@ public:
 	FVector2D MovementInput;
 
 	void Sanitize();
-	void Rotate(float AxisValue);
-	void MoveForward(float AxisValue);
+	void MoveX(float AxisValue);
+	void MoveY(float AxisValue);
 
 private:
 	// Raw data
@@ -56,21 +56,19 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* ShipCamera;
 
-#if WITH_EDITORONLY_DATA
 	/** Component shown in the editor only to indicate character facing */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* ShipForward;
-#endif
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	// The rotate action
-	void Rotate(float AxisValue);
+	void MoveX(float AxisValue);
 
 	// The move forward action
-	void MoveForward(float AxisValue);
+	void MoveY(float AxisValue);
 
 	/** The Input Struct. */
 	UPROPERTY(Category = "Ship Input", VisibleAnywhere, BlueprintReadOnly)
@@ -98,9 +96,7 @@ public:
 	/** Returns RiggingComponent subobject **/
 	/*FORCEINLINE class UChildActorComponent* GetShipRiggingActor() const { return ShipRiggingActor; } */
 
-#if WITH_EDITORONLY_DATA
 	/** Returns ArrowComponent subobject **/
 	class UArrowComponent* GetShipForward() const { return ShipForward; }
-#endif
 	
 };
