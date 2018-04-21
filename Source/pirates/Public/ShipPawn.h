@@ -21,6 +21,8 @@ public:
 	void MoveX(float AxisValue);
 	void MoveY(float AxisValue);
 
+	bool forward;
+
 private:
 	// Raw data
 	FVector2D RawMovementInput;
@@ -67,8 +69,11 @@ protected:
 	// The rotate action
 	void MoveX(float AxisValue);
 
-	// The move forward action
+	// The rotate action
 	void MoveY(float AxisValue);
+
+	// The move forward action
+	void MoveForward(float AxisValue);
 
 	/** The Input Struct. */
 	UPROPERTY(Category = "Ship Input", VisibleAnywhere, BlueprintReadOnly)
