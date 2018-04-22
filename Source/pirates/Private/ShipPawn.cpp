@@ -29,15 +29,15 @@ AShipPawn::AShipPawn()
 	HullSprite = CreateOptionalDefaultSubobject<UPaperSpriteComponent>(AShipPawn::HullSpriteComponentName);
 	if (HullSprite)
 	{
-		//HullSprite->AlwaysLoadOnClient = true;
-		//HullSprite->AlwaysLoadOnServer = true;
-		//HullSprite->bOwnerNoSee = false;
-		//HullSprite->bAffectDynamicIndirectLighting = true;
-		//HullSprite->PrimaryComponentTick.TickGroup = TG_PrePhysics;
+		/*HullSprite->AlwaysLoadOnClient = true;
+		HullSprite->AlwaysLoadOnServer = true;
+		HullSprite->bOwnerNoSee = false;
+		HullSprite->bAffectDynamicIndirectLighting = true;
+		HullSprite->PrimaryComponentTick.TickGroup = TG_PrePhysics;*/
 		HullSprite->SetupAttachment(ShipForward);
-		//static FName CollisionProfileName(TEXT("CharacterMesh"));
-		//HullSprite->SetCollisionProfileName(CollisionProfileName);
-		//HullSprite->bGenerateOverlapEvents = false;
+		/*static FName CollisionProfileName(TEXT("CharacterMesh"));
+		HullSprite->SetCollisionProfileName(CollisionProfileName);
+		HullSprite->bGenerateOverlapEvents = false;*/
 	}
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
