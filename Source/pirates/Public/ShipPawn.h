@@ -6,29 +6,6 @@
 #include "GameFramework/Pawn.h"
 #include "ShipPawn.generated.h"
 
-// Input Management
-USTRUCT(BlueprintType)
-struct FShipInput {
-	GENERATED_BODY()
-
-public:
-
-	// Sanatize movement input
-	UPROPERTY(Category = "Ship Input", VisibleAnywhere, BlueprintReadWrite)
-	FVector2D MovementInput;
-
-	void Sanitize();
-	void MoveX(float AxisValue);
-	void MoveY(float AxisValue);
-
-	bool forward;
-
-private:
-	// Raw data
-	FVector2D RawMovementInput;
-
-};
-
 UCLASS()
 class PIRATES_API AShipPawn : public APawn
 {
@@ -62,44 +39,32 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* ShipForward;
 
+	class USpringArmComponent* SpringArm;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// The rotate action
-	void MoveX(float AxisValue);
-
-	// The rotate action
-	void MoveY(float AxisValue);
+	// The rotation action
+	void Turn(float AxisValue);
 
 	// The move forward action
 	void MoveForward(float AxisValue);
 
-	/** The Input Struct. */
-	UPROPERTY(Category = "Ship Input", VisibleAnywhere, BlueprintReadOnly)
-		FShipInput ShipInput;
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	/** Maximum yaw rotation. */
-	UPROPERTY(Category = "Ship", EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
-		float YawSpeed;
-
-	/** Maximum rate of movement. */
-	UPROPERTY(Category = "Ship", EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"))
-		float ShipSpeed;
+	class UShipFloatingPawnMovement* ShipMovementComponent;
 
 public:	
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	/** Returns HullSprite subobject **/
 	FORCEINLINE class UPaperSpriteComponent * GetHullSprite() const { return HullSprite; }
 
-	/** Returns RiggingComponent subobject **/
-	/*FORCEINLINE class UChildActorComponent* GetShipRiggingActor() const { return ShipRiggingActor; } */
+	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 	/** Returns ArrowComponent subobject **/
 	class UArrowComponent* GetShipForward() const { return ShipForward; }
