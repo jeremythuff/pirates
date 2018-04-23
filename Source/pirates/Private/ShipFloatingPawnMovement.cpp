@@ -19,10 +19,10 @@ void UShipFloatingPawnMovement::TickComponent(float DeltaTime, enum ELevelTick T
 	// Move the Ship
 	{		
 
-		FVector DesiredMovementThisFrame = ConsumeInputVector().GetClampedToMaxSize(1.0f) / DeltaTime;
+		FVector DesiredMovementThisFrame = ConsumeInputVector().GetClampedToMaxSize(1.0f) * DeltaTime;
 
-		if (!DesiredMovementThisFrame.IsNearlyZero())
-		{
+		if (!DesiredMovementThisFrame.IsNearlyZero()) {
+
 			FHitResult Hit;
 			bool safeMove = SafeMoveUpdatedComponent(DesiredMovementThisFrame, UpdatedComponent->GetComponentRotation(), true, Hit);
 
@@ -31,7 +31,12 @@ void UShipFloatingPawnMovement::TickComponent(float DeltaTime, enum ELevelTick T
 			{
 				SlideAlongSurface(DesiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
 			}
+
+			ApplyControlInputToVelocity(DeltaTime);
+
 		}
+
+		
 	}
 
 }

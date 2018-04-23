@@ -82,11 +82,6 @@ void AShipPawn::BeginPlay()
 	SpringArm->bInheritPitch = false;
 	SpringArm->bInheritRoll = false;
 	SpringArm->bInheritYaw = false;
-
-	ShipMovementComponent->MaxSpeed = 0.05;
-	ShipMovementComponent->Acceleration = ShipMovementComponent->MaxSpeed * 250;
-	ShipMovementComponent->Deceleration = ShipMovementComponent->MaxSpeed / 2;
-
 }
 
 // Called every frame
