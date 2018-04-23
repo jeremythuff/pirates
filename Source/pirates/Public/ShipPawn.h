@@ -25,6 +25,10 @@ public:
 private:
 	/** The main Sprite associated with the (optional sub-object). */
 	UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UCapsuleComponent * ShipCapsule;
+	
+	/** The main Sprite associated with the (optional sub-object). */
+	UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UPaperSpriteComponent * HullSprite;
 
 	/** The rigging actor associated with the (optional sub-object). */

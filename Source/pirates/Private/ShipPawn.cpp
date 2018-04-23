@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "PaperSpriteComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "ShipFloatingPawnMovement.h"
 #include "RiggingActor.h"
 
@@ -19,7 +20,9 @@ AShipPawn::AShipPawn()
 	PrimaryActorTick.bCanEverTick = true;
 
 	if (!RootComponent) {
-		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ShipBase"));
+		//RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ShipBase"));
+		RootComponent = ShipCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ShipBase"));
+		
 	}
 	
 	ShipForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
@@ -41,7 +44,7 @@ AShipPawn::AShipPawn()
 	}
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	SpringArm->TargetArmLength = 500.0f;
+	SpringArm->TargetArmLength = 1000.0f;
 	SpringArm->bEnableCameraLag = true;
 	SpringArm->bEnableCameraRotationLag = false;
 	SpringArm->bUsePawnControlRotation = false;
@@ -53,8 +56,8 @@ AShipPawn::AShipPawn()
 	ShipCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ShipCamera"));
 	ShipCamera->bUsePawnControlRotation = false;
 	ShipCamera->ProjectionMode = ECameraProjectionMode::Orthographic;
-	ShipCamera->OrthoWidth = 1024.0f;
-	ShipCamera->AspectRatio = 3.0f / 4.0f;
+	ShipCamera->OrthoWidth = 2048.0f;
+	ShipCamera->AspectRatio = 2.39f / 1.0f;
 	ShipCamera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	ShipCamera->SetWorldRotation(FRotator(-90.0f, 0.0f, 0.0f));
 
@@ -80,8 +83,8 @@ void AShipPawn::BeginPlay()
 	SpringArm->bInheritRoll = false;
 	SpringArm->bInheritYaw = false;
 
-	ShipMovementComponent->MaxSpeed = 100.0f;
-	ShipMovementComponent->Acceleration = ShipMovementComponent->MaxSpeed / 2;
+	ShipMovementComponent->MaxSpeed = 0.05;
+	ShipMovementComponent->Acceleration = ShipMovementComponent->MaxSpeed * 250;
 	ShipMovementComponent->Deceleration = ShipMovementComponent->MaxSpeed / 2;
 
 }
@@ -116,5 +119,5 @@ void AShipPawn::Turn(float AxisValue)
 	FRotator NewRotation = GetActorRotation();
 	NewRotation.Yaw += (halfAxisValue);
 	SetActorRotation(NewRotation);
-	AShipPawn::MoveForward(FMath::Abs(AxisValue));
+	AShipPawn::MoveForward(FMath::Abs(AxisValue*2));
 }
