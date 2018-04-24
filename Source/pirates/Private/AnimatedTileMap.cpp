@@ -68,6 +68,9 @@ void AAnimatedTileMap::BeginPlay()
 							
 							for (auto AnimatedTilesItr(AnimatedTiles.CreateIterator()); AnimatedTilesItr; AnimatedTilesItr++)
 							{
+								
+								UE_LOG(LogTemp, Warning, TEXT("FlipbookName %s, AnimatedTilesItr %s, Row %s, flipbook %s"), *FlipbookName, *(*AnimatedTilesItr)->GetName());
+								
 								if (FlipbookName.Equals((*AnimatedTilesItr)->GetName())) {
 									UE_LOG(LogTemp, Warning, TEXT("Layer %s, Col %s, Row %s, flipbook %s"), *FString::FromInt(layerZ), *FString::FromInt(tileX), *FString::FromInt(tileY), *FlipbookName);
 
