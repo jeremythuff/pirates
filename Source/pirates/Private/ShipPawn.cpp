@@ -22,7 +22,6 @@ AShipPawn::AShipPawn()
 	if (!RootComponent) {
 		//RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ShipBase"));
 		RootComponent = ShipCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("ShipBase"));
-		
 	}
 	
 	ShipForward = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
