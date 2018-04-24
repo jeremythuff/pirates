@@ -77,15 +77,16 @@ void AAnimatedTileMap::BeginPlay()
 									// place flipbook in the same spot where the current tile is.
 									FVector location = BaseTileMap->GetTileCenterPosition(tileX, tileY, layerZ);
 									FRotator rotate = BaseTileMap->GetComponentRotation();
-									FActorSpawnParameters SpawnInfo;
 
 									//GetWorld()->SpawnActor<UPaperFlipbook>(AnimatedTiles[AnimatedTilesItr.GetIndex()]->GetClass(), location, rotate, SpawnInfo);
 
 									UPaperFlipbookComponent* NewFlipbook = NewObject<UPaperFlipbookComponent>(BaseTileMap);
+									NewFlipbook->RegisterComponent();
+
 									NewFlipbook->SetFlipbook(AnimatedTiles[AnimatedTilesItr.GetIndex()]);
 									NewFlipbook->SetRelativeLocation(location);
 									//NewFlipbook->SetWorldRotation(rotate);
-									NewFlipbook->SetupAttachment(BaseTileMap);
+									NewFlipbook->AttachToComponent(BaseTileMap, FAttachmentTransformRules::KeepRelativeTransform);
 									NewFlipbook->PlayFromStart();
 								}
 							}
