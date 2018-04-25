@@ -35,6 +35,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true", MetaClass = "ARiggingActor"))
 		class UChildActorComponent* ShipRigging;
 
+	/** The rigging actor associated with the (optional sub-object). */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true", MetaClass = "UPaperFlipbook"))
+		class UPaperFlipbookComponent* ShipRipple;
+
 	/** The Camera. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* ShipCamera;

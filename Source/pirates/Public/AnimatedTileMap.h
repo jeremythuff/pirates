@@ -30,6 +30,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map|Animated Tiles", meta = (AllowPrivateAccess = "true", MetaClass = "UPaperFlipbook"))
 		TArray<UPaperFlipbook*> AnimatedTiles;
 
+	void SetUpMapAnimation();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

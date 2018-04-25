@@ -28,7 +28,12 @@ AAnimatedTileMap::AAnimatedTileMap()
 void AAnimatedTileMap::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	AAnimatedTileMap::SetUpMapAnimation();
 
+}
+
+void AAnimatedTileMap::SetUpMapAnimation() {
 	UPaperTileMap* TMap = BaseTileMap->TileMap;
 
 	BaseTileMap->MakeTileMapEditable();
@@ -41,13 +46,12 @@ void AAnimatedTileMap::BeginPlay()
 	{
 
 		int32 layerZ = LayerItr.GetIndex();
-		
 		if (!(*LayerItr)->IsValidLowLevel()) continue;
 
 		for (int32 tileX = 0; tileX < MapHeight; tileX++) {
 
 			for (int32 tileY = 0; tileY < MapWidth; tileY++) {
-				
+
 				FPaperTileInfo TileInfo = BaseTileMap->GetTile(tileX, tileY, layerZ);
 				UPaperTileSet* TileSet = TileInfo.TileSet;
 				FString TileUserData = TileSet->GetTileUserData(TileInfo.PackedTileIndex).ToString();
@@ -60,19 +64,16 @@ void AAnimatedTileMap::BeginPlay()
 
 					for (auto MetadatumIter(Metadatum.CreateIterator()); MetadatumIter; MetadatumIter++)
 					{
-						
+
 						if (MetadatumIter->Contains("flipbook=")) {
-							
+
 							FString Key, FlipbookName;
 							MetadatumIter->Split(TEXT("="), &Key, &FlipbookName);
-							
+
 							for (auto AnimatedTilesItr(AnimatedTiles.CreateIterator()); AnimatedTilesItr; AnimatedTilesItr++)
 							{
-								
-								UE_LOG(LogTemp, Warning, TEXT("FlipbookName %s, AnimatedTilesItr %s, Row %s, flipbook %s"), *FlipbookName, *(*AnimatedTilesItr)->GetName());
-								
+
 								if (FlipbookName.Equals((*AnimatedTilesItr)->GetName())) {
-									UE_LOG(LogTemp, Warning, TEXT("Layer %s, Col %s, Row %s, flipbook %s"), *FString::FromInt(layerZ), *FString::FromInt(tileX), *FString::FromInt(tileY), *FlipbookName);
 
 									// shut off current tile, but retain collision.
 									BaseTileMap->SetTile(tileX, tileY, layerZ, FPaperTileInfo::FPaperTileInfo());
@@ -81,14 +82,11 @@ void AAnimatedTileMap::BeginPlay()
 									FVector location = BaseTileMap->GetTileCenterPosition(tileX, tileY, layerZ);
 									FRotator rotate = BaseTileMap->GetComponentRotation();
 
-									//GetWorld()->SpawnActor<UPaperFlipbook>(AnimatedTiles[AnimatedTilesItr.GetIndex()]->GetClass(), location, rotate, SpawnInfo);
-
 									UPaperFlipbookComponent* NewFlipbook = NewObject<UPaperFlipbookComponent>(BaseTileMap);
 									NewFlipbook->RegisterComponent();
 
 									NewFlipbook->SetFlipbook(AnimatedTiles[AnimatedTilesItr.GetIndex()]);
 									NewFlipbook->SetRelativeLocation(location);
-									//NewFlipbook->SetWorldRotation(rotate);
 									NewFlipbook->AttachToComponent(BaseTileMap, FAttachmentTransformRules::KeepRelativeTransform);
 									NewFlipbook->PlayFromStart();
 								}
@@ -105,7 +103,6 @@ void AAnimatedTileMap::BeginPlay()
 		}
 
 	}
-	
 }
 
 // Called every frame

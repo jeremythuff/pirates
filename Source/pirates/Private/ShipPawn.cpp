@@ -5,6 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "PaperSpriteComponent.h"
+#include "PaperFlipbookComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ShipFloatingPawnMovement.h"
@@ -62,6 +63,9 @@ AShipPawn::AShipPawn()
 
 	ShipRigging = CreateOptionalDefaultSubobject<UChildActorComponent>(AShipPawn::RiggingActorName);
 	ShipRigging->SetupAttachment(HullSprite);
+
+	ShipRipple = CreateOptionalDefaultSubobject<UPaperFlipbookComponent>(TEXT("ShipRipple"));
+	ShipRipple->SetupAttachment(HullSprite);
 
 	// Create an instance of our movement component, and tell it to update the root.
 	ShipMovementComponent = CreateDefaultSubobject<UShipFloatingPawnMovement>(TEXT("ShipFloatingPawnMovement"));
