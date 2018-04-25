@@ -69,7 +69,7 @@ AShipPawn::AShipPawn()
 
 	// Create an instance of our movement component, and tell it to update the root.
 	ShipMovementComponent = CreateDefaultSubobject<UShipFloatingPawnMovement>(TEXT("ShipFloatingPawnMovement"));
-
+  ShipMovementComponent->UpdatedComponent = RootComponent;
 }
 
 UPawnMovementComponent* AShipPawn::GetMovementComponent() const

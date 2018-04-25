@@ -31,7 +31,7 @@ void UShipFloatingPawnMovement::TickComponent(float DeltaTime, enum ELevelTick T
 			{
 				SlideAlongSurface(DesiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
 			}
-
+    
 			ApplyControlInputToVelocity(DeltaTime);
 
 		}

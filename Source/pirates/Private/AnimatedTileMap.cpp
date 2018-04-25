@@ -76,7 +76,7 @@ void AAnimatedTileMap::SetUpMapAnimation() {
 								if (FlipbookName.Equals((*AnimatedTilesItr)->GetName())) {
 
 									// shut off current tile, but retain collision.
-									BaseTileMap->SetTile(tileX, tileY, layerZ, FPaperTileInfo::FPaperTileInfo());
+									BaseTileMap->SetTile(tileX, tileY, layerZ, FPaperTileInfo());
 
 									// place flipbook in the same spot where the current tile is.
 									FVector location = BaseTileMap->GetTileCenterPosition(tileX, tileY, layerZ);
