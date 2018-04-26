@@ -45,14 +45,19 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 	if (BaseTileSet) {
 		BaseTileMap->MakeTileMapEditable();
 		BaseTileMap->TileMap->SelectedTileSet = BaseTileSet;
+		
+		int32 TileSize = BaseTileSet->GetTileSize().GetMax();
 
+		BaseTileMap->TileMap->TileWidth = TileSize;
+		BaseTileMap->TileMap->TileHeight = TileSize;
+			
 		for (int32 TileX = 0; TileX < Rows; TileX++) {
 			for (int32 TileY = 0; TileY < Columns; TileY++) {
 
 				FPaperTileInfo TileInfo = FPaperTileInfo();
 				TileInfo.TileSet = BaseTileSet;
 				TileInfo.PackedTileIndex = 72;
-				UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d"), TileX, TileY, OceanLayer->GetLayerIndex());
+				UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels"), TileX, TileY, OceanLayer->GetLayerIndex(), TileSize);
 				BaseTileMap->SetTile(TileX, TileY, OceanLayer->GetLayerIndex(), TileInfo);
 			}
 		}
