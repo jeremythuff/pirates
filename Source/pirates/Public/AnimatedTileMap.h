@@ -20,8 +20,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-private:
-
 	/** The base tile map associated with the (optional sub-object). */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map", meta = (AllowPrivateAccess = "true", MetaClass = "UPaperTileMap"))
 		class UPaperTileMapComponent* BaseTileMap;
