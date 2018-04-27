@@ -37,6 +37,9 @@ private:
 	/** The number of columns the generated map should have. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 		int32 Columns = 4;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+	class UFastNoise * FastNoise;
 	
 	
 };
