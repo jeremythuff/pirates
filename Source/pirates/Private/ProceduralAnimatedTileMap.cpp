@@ -128,10 +128,9 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		
 
 	}
+
 	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BaseTileMap->SetDefaultCollisionThickness(1000.0f);
 	BaseTileMap->RebuildCollision();
-	BaseTileMap->TileMap->RebuildCollision();
-	BaseTileMap->RebuildCollision();
-	FRotator rotate = FRotator(360.0f);
-	BaseTileMap->AddWorldRotation(rotate);
+
 }
