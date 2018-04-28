@@ -51,6 +51,36 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 
 		BaseTileMap->MakeTileMapEditable();
 		BaseTileMap->TileMap->SelectedTileSet = BaseTileSet;
+
+		TMultiMap<FString, int32> TileTypes;
+
+		for (int32 index = 0; index < BaseTileSet->GetTileCount(); index++) {
+
+			FName TileUserMetadata = BaseTileSet->GetTileUserData(index);
+			FString TileUserMetadaRaw = TileUserMetadata.ToString();
+			
+			if (!TileUserMetadaRaw.Contains("tiletype")) {
+				continue;
+			} 
+
+			TArray<FString> Metadatum;
+			TileUserMetadaRaw.ParseIntoArray(Metadatum, TEXT(";"), true);
+
+			for (auto MetadatumIter(Metadatum.CreateIterator()); MetadatumIter; MetadatumIter++) {
+				if (!MetadatumIter->Contains("tiletype=")) {
+					continue;
+				}
+
+				FString Key, TileType;
+				MetadatumIter->Split(TEXT("="), &Key, &TileType);
+				
+				TileTypes.AddUnique(TileType,index);
+
+			}
+
+		}
+
+
 		
 		int32 TileSize = BaseTileSet->GetTileSize().GetMax();
 
@@ -85,12 +115,23 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 				if (noise>0.75f) {
 					FPaperTileInfo GroundTileInfo = FPaperTileInfo();
 					GroundTileInfo.TileSet = BaseTileSet;
-					GroundTileInfo.PackedTileIndex = 22;
+					TArray<int32> GrassTileArray;
+					TileTypes.MultiFind("grass", GrassTileArray, true);
+					int32 GrassTileIndex = FMath::RandRange(0, GrassTileArray.Num() - 1);
+					GroundTileInfo.PackedTileIndex = GrassTileArray[GrassTileIndex];
 					BaseTileMap->SetTile(TileX, TileY, GroundLayer->GetLayerIndex(), GroundTileInfo);
 				}
 
 			}
 		}
-	}
 
+		
+
+	}
+	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BaseTileMap->RebuildCollision();
+	BaseTileMap->TileMap->RebuildCollision();
+	BaseTileMap->RebuildCollision();
+	FRotator rotate = FRotator(360.0f);
+	BaseTileMap->AddWorldRotation(rotate);
 }
