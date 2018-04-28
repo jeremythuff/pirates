@@ -28,7 +28,6 @@ AProceduralAnimatedTileMap::AProceduralAnimatedTileMap() :
 // Called when the game starts or when spawned
 void AProceduralAnimatedTileMap::BeginPlay()
 {
-	Super::BeginPlay();
 
 	AProceduralAnimatedTileMap::GenerateMap();
 
@@ -45,6 +44,8 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 	BaseTileMap->ResizeMap(Rows, Columns);
 
 	UPaperTileLayer* OceanLayer = BaseTileMap->TileMap->AddNewLayer();
+	UPaperTileLayer* GroundLayer = BaseTileMap->TileMap->AddNewLayer();
+	GroundLayer->SetLayerCollides(true);
 
 	if (BaseTileSet) {
 
@@ -55,17 +56,39 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 
 		BaseTileMap->TileMap->TileWidth = TileSize;
 		BaseTileMap->TileMap->TileHeight = TileSize;
+
+		FastNoise->SetSeed(FMath::RandRange(0,10));
+		FastNoise->SetFrequency(float(1 - (1 / Columns*Rows)));
+		FastNoise->SetFractalOctaves(1 - (1 / Columns*Rows)*10);
+		FastNoise->SetFractalGain(0.5f);
+		FastNoise->SetFractalLacunarity(2.0f);
 			
+		/*FastNoise->SetCellularNoiseLookup(FastNoise);*/
+		/*FastNoise->SetCellularDistanceFunction(ECellularDistanceFunction::Natural);
+		FastNoise->SetCellularReturnType(ECellularReturnType::Distance2Add);*/
+
+		FastNoise->SetNoiseType(ENoiseType::Value);
+
 		for (int32 TileX = 0; TileX < Rows; TileX++) {
 			for (int32 TileY = 0; TileY < Columns; TileY++) {
-	
-				float noise = FastNoise->GetNoise((float)TileX, (float)TileY);
 
-				FPaperTileInfo TileInfo = FPaperTileInfo();
-				TileInfo.TileSet = BaseTileSet;
-				TileInfo.PackedTileIndex = 72;
+				float noise = (FastNoise->GetNoise((float)TileX, (float)TileY));
+
+				FPaperTileInfo WaterTileInfo = FPaperTileInfo();
+				WaterTileInfo.TileSet = BaseTileSet;
+				WaterTileInfo.PackedTileIndex = 72;
+				
 				UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels and %f noise"), TileX, TileY, OceanLayer->GetLayerIndex(), TileSize, noise);
-				BaseTileMap->SetTile(TileX, TileY, OceanLayer->GetLayerIndex(), TileInfo);
+				
+				BaseTileMap->SetTile(TileX, TileY, OceanLayer->GetLayerIndex(), WaterTileInfo);
+				
+				if (noise>0.75f) {
+					FPaperTileInfo GroundTileInfo = FPaperTileInfo();
+					GroundTileInfo.TileSet = BaseTileSet;
+					GroundTileInfo.PackedTileIndex = 22;
+					BaseTileMap->SetTile(TileX, TileY, GroundLayer->GetLayerIndex(), GroundTileInfo);
+				}
+
 			}
 		}
 	}
