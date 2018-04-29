@@ -29,6 +29,8 @@ AProceduralAnimatedTileMap::AProceduralAnimatedTileMap() :
 void AProceduralAnimatedTileMap::BeginPlay()
 {
 	
+	AProceduralAnimatedTileMap::PositionMapTopDown();
+
 	AProceduralAnimatedTileMap::GenerateMap();
 
 	AProceduralAnimatedTileMap::SetUpMapAnimation();
@@ -39,30 +41,29 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 	
 	if (BaseTileSet) {
 
-		float MapWidth = (float)Columns*(float)BaseTileSet->GetTileSize().X;
-		float MapHeight = (float)Rows*(float)BaseTileSet->GetTileSize().Y;
-
-
-		/*UE_LOG(LogTemp, Warning, TEXT("MapWidth(%f)"), MapWidth)
-		UE_LOG(LogTemp, Warning, TEXT("MapHeight(%f)"), MapHeight)*/
-
-		BaseTileMap->SetRelativeRotation(FRotator(0.0f, 90.0f, -90.0f));
-		BaseTileMap->SetRelativeLocation(FVector(MapWidth, (MapWidth/2.0f)*(-1.0f), 0.0f));
-
 		FastNoise = NewObject<UFastNoise>(RootComponent, TEXT("NoiseGenerator"));
 
 		BaseTileMap->MakeTileMapEditable();
 
 		BaseTileMap->ResizeMap(Rows, Columns);
 
-		UPaperTileLayer* OceanLayer = BaseTileMap->TileMap->AddNewLayer(0);
-		OceanLayer->SetLayerCollides(false);
+		//TODO: Not working...
+		BaseTileMap->TileMap->SeparationPerLayer = 5.0f;
 
-		UPaperTileLayer* ShallowsLayer = BaseTileMap->TileMap->AddNewLayer(1);
+		UPaperTileLayer* FortaficationsLayer = BaseTileMap->TileMap->AddNewLayer();
+		FortaficationsLayer->SetLayerCollides(true);
+
+		UPaperTileLayer* FoliageLayer = BaseTileMap->TileMap->AddNewLayer();
+		FoliageLayer->SetLayerCollides(false);
+
+		UPaperTileLayer* GroundLayer = BaseTileMap->TileMap->AddNewLayer();
+		GroundLayer->SetLayerCollides(true);
+
+		UPaperTileLayer* ShallowsLayer = BaseTileMap->TileMap->AddNewLayer();
 		ShallowsLayer->SetLayerCollides(false);
 
-		UPaperTileLayer* GroundLayer = BaseTileMap->TileMap->AddNewLayer(2);
-		GroundLayer->SetLayerCollides(true);
+		UPaperTileLayer* OceanLayer = BaseTileMap->TileMap->AddNewLayer();
+		OceanLayer->SetLayerCollides(false);
 
 		BaseTileMap->MakeTileMapEditable();
 		BaseTileMap->TileMap->SelectedTileSet = BaseTileSet;
@@ -95,7 +96,7 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 				float Noise = (FastNoise->GetNoise((float)TileX, (float)TileY));
 
 				if (Noise <= WaterLevel) {
-					PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("water"));
+					PlaceTile(TileX, TileY, OceanLayer->GetLayerIndex(), TEXT("water"));
 				}
 
 				if (Noise > WaterLevel) {
@@ -111,6 +112,7 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 
 		// Grow Island Seeds into full islands
 
+		//Build Coastlines
 		for (int32 TileX = 0; TileX < Rows; TileX++) {
 			for (int32 TileY = 0; TileY < Columns; TileY++) {
 
@@ -121,37 +123,134 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 				if (TileType.Equals(TEXT("grass"))) {
 					
 
-					int32 NorthY = TileY - 1;
-					int32 SouthY = TileY + 1;
-					int32 EastX = TileX - 1;
-					int32 WestX = TileX + 1;
+					int32 BeachNorthY = TileY - 1;
+					int32 BeachSouthY = TileY + 1;
+					int32 BeachEastX = TileX + 1;
+					int32 BeachWestX = TileX - 1;
 
-					//Place Tile North
-					if (NorthY <= Rows) {
-						PlaceTile(TileX, NorthY, GroundLayer->GetLayerIndex(), TEXT("grassN"));
-						PlaceTile(TileX, NorthY, OceanLayer->GetLayerIndex(), TEXT("water"));
+					//Place Beach North
+					if (BeachNorthY < Rows) {
+						PlaceTile(TileX, BeachNorthY, GroundLayer->GetLayerIndex(), TEXT("grassN"));
 					}
 
-					//Place Tile North East
-					if (NorthY < Rows && EastX < Columns) {
-						UE_LOG(LogTemp, Warning, TEXT("Found 'grass' @ %dX %dY Layer %d"), TileX, TileY, GroundLayer->GetLayerIndex());
-						PlaceTile(EastX, NorthY, GroundLayer->GetLayerIndex(), TEXT("grassNE"));
-						PlaceTile(EastX, NorthY, OceanLayer->GetLayerIndex(), TEXT("water"));
+					//Place Beach North East
+					if (BeachNorthY < Rows && BeachEastX < Columns) {
+						PlaceTile(BeachEastX, BeachNorthY, GroundLayer->GetLayerIndex(), TEXT("grassNE"));
 					}
 
-					//Place Tile East
+					//Place Beach East
+					if (BeachEastX < Columns) {
+						PlaceTile(BeachEastX, TileY, GroundLayer->GetLayerIndex(), TEXT("grassE"));
+					}
 
-					//Place Tile South East
+					//Place Beach South East
+					if (BeachSouthY >= 0 && BeachEastX < Columns) {
+						PlaceTile(BeachEastX, BeachSouthY, GroundLayer->GetLayerIndex(), TEXT("grassSE"));
+					}
 
-					//Place Tile South
+					//Place Beach South
+					if (BeachSouthY >= 0) {
+						PlaceTile(TileX, BeachSouthY, GroundLayer->GetLayerIndex(), TEXT("grassS"));
+					}
 
-					//Place Tile South West
+					//Place Beach South West
+					if (BeachSouthY >= 0 && BeachWestX >= 0) {
+						PlaceTile(BeachWestX, BeachSouthY, GroundLayer->GetLayerIndex(), TEXT("grassSW"));
+					}
 
-					//Place Tile West
+					//Place Beach West
+					if (BeachWestX >= 0) {
+						PlaceTile(BeachWestX, TileY, GroundLayer->GetLayerIndex(), TEXT("grassW"));
+					}
 
-					//Place Tile North West
+					//Place Beach North West
+					if (BeachNorthY < Rows && BeachWestX >= 0) {
+						PlaceTile(BeachWestX, BeachNorthY, GroundLayer->GetLayerIndex(), TEXT("grassNW"));
+					}
 
-					PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("grass"));
+					int32 ShallowsNorthY = TileY - 2;
+					int32 ShallowsSouthY = TileY + 2;
+					int32 ShallowsEastX = TileX + 2;
+					int32 ShallowsWestX = TileX - 2;
+
+					//Place Shallows North
+					if (ShallowsNorthY < Rows) {
+						PlaceTile(TileX, ShallowsNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsN"));
+						PlaceTile(TileX, BeachNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+						
+
+
+						PlaceTile(BeachWestX, ShallowsNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsN"));
+						PlaceTile(BeachWestX, BeachNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+						
+
+						PlaceTile(BeachEastX, ShallowsNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsN"));
+						PlaceTile(BeachEastX, BeachNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+
+					}
+
+					//Place Shallows North East
+					if (ShallowsNorthY < Rows && ShallowsEastX < Columns) {
+						PlaceTile(ShallowsEastX, ShallowsNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsNE"));
+					}
+
+					//Place Shallows East
+					if (ShallowsEastX < Columns) {
+						PlaceTile(ShallowsEastX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsE"));
+						PlaceTile(BeachEastX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+
+
+
+						PlaceTile(ShallowsEastX, BeachNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsE"));
+						PlaceTile(BeachEastX, BeachNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+
+
+						PlaceTile(ShallowsEastX, BeachSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsE"));
+						PlaceTile(BeachEastX, BeachSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+					}
+
+					//Place Shallows South East
+					if (ShallowsSouthY >= 0 && ShallowsEastX < Columns) {
+						PlaceTile(ShallowsEastX, ShallowsSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsSE"));
+					}
+
+					//Place Shallows South
+					if (ShallowsSouthY >= 0) {
+						PlaceTile(TileX, ShallowsSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsS"));
+						PlaceTile(TileX, BeachSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+
+
+
+						PlaceTile(BeachWestX, ShallowsSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsS"));
+						PlaceTile(BeachWestX, BeachSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+
+
+						PlaceTile(BeachEastX, ShallowsSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsS"));
+						PlaceTile(BeachEastX, BeachSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+					}
+
+					//Place Shallows South West
+					if (ShallowsSouthY >= 0 && ShallowsWestX >= 0) {
+						PlaceTile(ShallowsWestX, ShallowsSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsSW"));
+					}
+
+					//Place Shallows West
+					if (ShallowsWestX >= 0) {
+						PlaceTile(ShallowsWestX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsW"));
+						PlaceTile(BeachWestX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+
+						PlaceTile(ShallowsWestX, BeachNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsW"));
+						PlaceTile(BeachWestX, BeachNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+
+						PlaceTile(ShallowsWestX, BeachSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsW"));
+						PlaceTile(BeachWestX, BeachSouthY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+					}
+
+					//Place Shallows North West
+					if (ShallowsNorthY < Rows && ShallowsWestX >= 0) {
+						PlaceTile(ShallowsWestX, ShallowsNorthY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsNW"));
+					}
+
 
 				}
 
@@ -166,6 +265,20 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	BaseTileMap->SetDefaultCollisionThickness(1000.0f);
 	BaseTileMap->RebuildCollision();
+
+}
+
+void AProceduralAnimatedTileMap::PositionMapTopDown() {
+
+	if (BaseTileSet) {
+
+		float MapWidth = (float)Columns*(float)BaseTileSet->GetTileSize().X;
+		float MapHeight = (float)Rows*(float)BaseTileSet->GetTileSize().Y;
+
+		BaseTileMap->SetRelativeRotation(FRotator(0.0f, 90.0f, -90.0f));
+		BaseTileMap->SetRelativeLocation(FVector(MapWidth, (MapWidth / 2.0f)*(-1.0f), 0.0f));
+
+	}
 
 }
 

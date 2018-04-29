@@ -62,6 +62,8 @@ private:
 
 	class TMultiMap<FString, int32> TileTypes;
 	
+	void PositionMapTopDown();
+
 	void PlaceTile(int32 TileX, int32 TileY, int32 LayerIndex, FString TileType);
 	
 };
