@@ -38,8 +38,30 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 		int32 Columns = 4;
 
+	/** The number of columns the generated map should have. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-	class UFastNoise * FastNoise;
+		int32 Seed = FMath::RandRange(0, 999999);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float Frequency = 8.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float Octaves = 8.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float Gain = 1.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float Lacunarity = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float WaterLevel = 0.9f;
+
+	UPROPERTY()
+		class UFastNoise * FastNoise;
+
+	class TMultiMap<FString, int32> TileTypes;
 	
+	void PlaceTile(int32 TileX, int32 TileY, int32 LayerIndex, FString TileType);
 	
 };

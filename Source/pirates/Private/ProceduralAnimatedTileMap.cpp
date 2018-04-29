@@ -28,7 +28,7 @@ AProceduralAnimatedTileMap::AProceduralAnimatedTileMap() :
 // Called when the game starts or when spawned
 void AProceduralAnimatedTileMap::BeginPlay()
 {
-
+	
 	AProceduralAnimatedTileMap::GenerateMap();
 
 	AProceduralAnimatedTileMap::SetUpMapAnimation();
@@ -36,101 +36,147 @@ void AProceduralAnimatedTileMap::BeginPlay()
 }
 
 void AProceduralAnimatedTileMap::GenerateMap() {
-
-	FastNoise = NewObject<UFastNoise>(RootComponent, TEXT("NoiseGenerator"));
-
-	BaseTileMap->MakeTileMapEditable();
-
-	BaseTileMap->ResizeMap(Rows, Columns);
-
-	UPaperTileLayer* OceanLayer = BaseTileMap->TileMap->AddNewLayer();
-	UPaperTileLayer* GroundLayer = BaseTileMap->TileMap->AddNewLayer();
-	GroundLayer->SetLayerCollides(true);
-
+	
 	if (BaseTileSet) {
+
+		float MapWidth = (float)Columns*(float)BaseTileSet->GetTileSize().X;
+		float MapHeight = (float)Rows*(float)BaseTileSet->GetTileSize().Y;
+
+
+		/*UE_LOG(LogTemp, Warning, TEXT("MapWidth(%f)"), MapWidth)
+		UE_LOG(LogTemp, Warning, TEXT("MapHeight(%f)"), MapHeight)*/
+
+		BaseTileMap->SetRelativeRotation(FRotator(0.0f, 90.0f, -90.0f));
+		BaseTileMap->SetRelativeLocation(FVector(MapWidth, (MapWidth/2.0f)*(-1.0f), 0.0f));
+
+		FastNoise = NewObject<UFastNoise>(RootComponent, TEXT("NoiseGenerator"));
+
+		BaseTileMap->MakeTileMapEditable();
+
+		BaseTileMap->ResizeMap(Rows, Columns);
+
+		UPaperTileLayer* OceanLayer = BaseTileMap->TileMap->AddNewLayer(0);
+		OceanLayer->SetLayerCollides(false);
+
+		UPaperTileLayer* ShallowsLayer = BaseTileMap->TileMap->AddNewLayer(1);
+		ShallowsLayer->SetLayerCollides(false);
+
+		UPaperTileLayer* GroundLayer = BaseTileMap->TileMap->AddNewLayer(2);
+		GroundLayer->SetLayerCollides(true);
 
 		BaseTileMap->MakeTileMapEditable();
 		BaseTileMap->TileMap->SelectedTileSet = BaseTileSet;
 
-		TMultiMap<FString, int32> TileTypes;
-
-		for (int32 index = 0; index < BaseTileSet->GetTileCount(); index++) {
-
-			FName TileUserMetadata = BaseTileSet->GetTileUserData(index);
-			FString TileUserMetadaRaw = TileUserMetadata.ToString();
-			
-			if (!TileUserMetadaRaw.Contains("tiletype")) {
-				continue;
-			} 
-
-			TArray<FString> Metadatum;
-			TileUserMetadaRaw.ParseIntoArray(Metadatum, TEXT(";"), true);
-
-			for (auto MetadatumIter(Metadatum.CreateIterator()); MetadatumIter; MetadatumIter++) {
-				if (!MetadatumIter->Contains("tiletype=")) {
-					continue;
-				}
-
-				FString Key, TileType;
-				MetadatumIter->Split(TEXT("="), &Key, &TileType);
-				
-				TileTypes.AddUnique(TileType,index);
-
-			}
-
-		}
-
-
+		TileTypes = ExtractAllTileUserData(TEXT("tiletype"));
 		
 		int32 TileSize = BaseTileSet->GetTileSize().GetMax();
 
 		BaseTileMap->TileMap->TileWidth = TileSize;
 		BaseTileMap->TileMap->TileHeight = TileSize;
 
-		FastNoise->SetSeed(FMath::RandRange(0,10));
-		FastNoise->SetFrequency(float(1 - (1 / Columns*Rows)));
-		FastNoise->SetFractalOctaves(1 - (1 / Columns*Rows)*10);
-		FastNoise->SetFractalGain(0.5f);
-		FastNoise->SetFractalLacunarity(2.0f);
+
+		//Seed Map with islands.
+
+		FastNoise->SetSeed(Seed);
+		FastNoise->SetFrequency(Frequency);
+		FastNoise->SetFractalOctaves(Octaves);
+		FastNoise->SetFractalGain(Gain);
+		FastNoise->SetFractalLacunarity(Lacunarity);
 			
 		/*FastNoise->SetCellularNoiseLookup(FastNoise);*/
 		/*FastNoise->SetCellularDistanceFunction(ECellularDistanceFunction::Natural);
-		FastNoise->SetCellularReturnType(ECellularReturnType::Distance2Add);*/
+		FastNoise->SetCellularReturnType(ECellularReturnType::Distance2Sub);*/
 
 		FastNoise->SetNoiseType(ENoiseType::Value);
-
+		
 		for (int32 TileX = 0; TileX < Rows; TileX++) {
 			for (int32 TileY = 0; TileY < Columns; TileY++) {
 
-				float noise = (FastNoise->GetNoise((float)TileX, (float)TileY));
+				float Noise = (FastNoise->GetNoise((float)TileX, (float)TileY));
 
-				FPaperTileInfo WaterTileInfo = FPaperTileInfo();
-				WaterTileInfo.TileSet = BaseTileSet;
-				WaterTileInfo.PackedTileIndex = 72;
-				
-				UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels and %f noise"), TileX, TileY, OceanLayer->GetLayerIndex(), TileSize, noise);
-				
-				BaseTileMap->SetTile(TileX, TileY, OceanLayer->GetLayerIndex(), WaterTileInfo);
-				
-				if (noise>0.75f) {
-					FPaperTileInfo GroundTileInfo = FPaperTileInfo();
-					GroundTileInfo.TileSet = BaseTileSet;
-					TArray<int32> GrassTileArray;
-					TileTypes.MultiFind("grass", GrassTileArray, true);
-					int32 GrassTileIndex = FMath::RandRange(0, GrassTileArray.Num() - 1);
-					GroundTileInfo.PackedTileIndex = GrassTileArray[GrassTileIndex];
-					BaseTileMap->SetTile(TileX, TileY, GroundLayer->GetLayerIndex(), GroundTileInfo);
+				if (Noise <= WaterLevel) {
+					PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("water"));
 				}
+
+				if (Noise > WaterLevel) {
+					PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("grass"));
+				}
+
+				UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels and %f Noise"), TileX, TileY, OceanLayer->GetLayerIndex(), TileSize, Noise);
 
 			}
 		}
 
 		
 
+		// Grow Island Seeds into full islands
+
+		for (int32 TileX = 0; TileX < Rows; TileX++) {
+			for (int32 TileY = 0; TileY < Columns; TileY++) {
+
+				FString TileType = ExtractTileUserData(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("tiletype"));
+
+				//UE_LOG(LogTemp, Warning, TEXT("Tile @ %dX %dY Layer %d is %s"), TileX, TileY, OceanLayer->GetLayerIndex(), *TileType);
+
+				if (TileType.Equals(TEXT("grass"))) {
+					
+
+					int32 NorthY = TileY - 1;
+					int32 SouthY = TileY + 1;
+					int32 EastX = TileX - 1;
+					int32 WestX = TileX + 1;
+
+					//Place Tile North
+					if (NorthY <= Rows) {
+						PlaceTile(TileX, NorthY, GroundLayer->GetLayerIndex(), TEXT("grassN"));
+						PlaceTile(TileX, NorthY, OceanLayer->GetLayerIndex(), TEXT("water"));
+					}
+
+					//Place Tile North East
+					if (NorthY < Rows && EastX < Columns) {
+						UE_LOG(LogTemp, Warning, TEXT("Found 'grass' @ %dX %dY Layer %d"), TileX, TileY, GroundLayer->GetLayerIndex());
+						PlaceTile(EastX, NorthY, GroundLayer->GetLayerIndex(), TEXT("grassNE"));
+						PlaceTile(EastX, NorthY, OceanLayer->GetLayerIndex(), TEXT("water"));
+					}
+
+					//Place Tile East
+
+					//Place Tile South East
+
+					//Place Tile South
+
+					//Place Tile South West
+
+					//Place Tile West
+
+					//Place Tile North West
+
+					PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("grass"));
+
+				}
+
+			}
+		}
+
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("ProceduralAnimatedTileMap must have a TileSet."))
 	}
 
 	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	BaseTileMap->SetDefaultCollisionThickness(1000.0f);
 	BaseTileMap->RebuildCollision();
 
+}
+
+void AProceduralAnimatedTileMap::PlaceTile(int32 TileX, int32 TileY, int32 LayerIndex, FString TileType) {
+	TArray<int32> TileArray;
+	TileTypes.MultiFind(TileType, TileArray, true);
+	if (TileArray.Num() > 0) {
+		FPaperTileInfo TileInfo = FPaperTileInfo();
+		TileInfo.TileSet = BaseTileSet;
+		int32 TileIndex = FMath::RandRange(0, TileArray.Num() - 1);
+		TileInfo.PackedTileIndex = TileArray[TileIndex];
+		BaseTileMap->SetTile(TileX, TileY, LayerIndex, TileInfo);
+	}
 }
