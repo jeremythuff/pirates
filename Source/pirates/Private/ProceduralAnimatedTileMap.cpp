@@ -266,7 +266,7 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		UE_LOG(LogTemp, Error, TEXT("ProceduralAnimatedTileMap must have a TileSet."))
 	}
 
-	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	BaseTileMap->SetDefaultCollisionThickness(1000.0f);
 	BaseTileMap->RebuildCollision();
 

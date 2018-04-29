@@ -43,19 +43,19 @@ private:
 		int32 Seed = FMath::RandRange(0, 999999);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float Frequency = 8.0f;
+		float Frequency = 0.95f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float Octaves = 8.0f;
+		float Octaves = 0.95f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float Gain = 1.5f;
+		float Gain = 0.25f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float Lacunarity = 0.5f;
+		float Lacunarity = 0.25f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float WaterLevel = 0.9f;
+		float WaterLevel = 0.85f;
 
 	UPROPERTY()
 		class UFastNoise * FastNoise;
