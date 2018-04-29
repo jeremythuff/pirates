@@ -60,6 +60,10 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		GroundLayer->SetLayerCollides(true);
 
 		UPaperTileLayer* ShallowsLayer = BaseTileMap->TileMap->AddNewLayer();
+
+		FLinearColor newColor = FLinearColor(ShallowsLayer->GetLayerColor());
+		newColor.A = 0.9f;
+		ShallowsLayer->SetLayerColor(newColor);
 		ShallowsLayer->SetLayerCollides(false);
 
 		UPaperTileLayer* OceanLayer = BaseTileMap->TileMap->AddNewLayer();
@@ -262,7 +266,7 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		UE_LOG(LogTemp, Error, TEXT("ProceduralAnimatedTileMap must have a TileSet."))
 	}
 
-	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	BaseTileMap->SetDefaultCollisionThickness(1000.0f);
 	BaseTileMap->RebuildCollision();
 
