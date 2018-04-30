@@ -21,7 +21,6 @@ AProceduralAnimatedTileMap::AProceduralAnimatedTileMap() :
 	BaseTileMap->SetupAttachment(RootComponent);
 
 	UPaperTileMap* GeneratedMap = CreateDefaultSubobject<UPaperTileMap>(TEXT("Generated Tile Map"));
-	BaseTileMap->SetTileMap(GeneratedMap);
 		
 }
 
@@ -266,10 +265,10 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		UE_LOG(LogTemp, Error, TEXT("ProceduralAnimatedTileMap must have a TileSet."))
 	}
 
-	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BaseTileMap->TileMap->SetCollisionDomain(ESpriteCollisionMode::Use3DPhysics);
+	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	BaseTileMap->SetDefaultCollisionThickness(1000.0f);
 	BaseTileMap->RebuildCollision();
-
 }
 
 void AProceduralAnimatedTileMap::PositionMapTopDown() {
