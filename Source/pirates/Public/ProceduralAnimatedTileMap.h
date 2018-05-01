@@ -48,10 +48,10 @@ protected:
 
 	/** The type of noise used to generate the map. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Noise", meta = (AllowPrivateAccess = "true"))
-		ENoiseType NoiseType = ENoiseType::Simplex;
+		ENoiseType NoiseType = ENoiseType::Value;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Noise", meta = (AllowPrivateAccess = "true"))
-		float Frequency = 0.25f;
+		float Frequency = 0.3f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Noise", meta = (AllowPrivateAccess = "true"))
 		EInterp Interpolation = EInterp::InterpLinear;
@@ -60,10 +60,10 @@ protected:
 		EFractalType FractalType = EFractalType::FBM;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Fractal", meta = (AllowPrivateAccess = "true"))
-		float Octaves = 1.0f;
+		float Octaves = 5.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Fractal", meta = (AllowPrivateAccess = "true"))
-		float Lacunarity = 2.0f;
+		float Lacunarity = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Fractal", meta = (AllowPrivateAccess = "true"))
 		float Gain = 0.4f;
@@ -90,6 +90,8 @@ protected:
 	class TMultiMap<FString, int32> TileTypes;
 	
 	void PositionMapTopDown();
+
+	float GetNoise(int32 X, int32 Y);
 
 	void PlaceTile(int32 TileX, int32 TileY, int32 LayerIndex, FString TileType);
 	
