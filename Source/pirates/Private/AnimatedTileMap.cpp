@@ -108,10 +108,10 @@ FString AAnimatedTileMap::ExtractTileUserData(int32 TileX, int32 TileY, int32 La
 
 			if (MetadatumIter->Contains(MetadataLabel)) {
 
-				FString Key, Metadatum;
-				MetadatumIter->Split(TEXT("="), &Key, &Metadatum);
+				FString Key, Datum;
+				MetadatumIter->Split(TEXT("="), &Key, &Datum);
 
-				return Metadatum;
+				return Datum;
 
 			}
 		}
@@ -142,10 +142,10 @@ TMultiMap<FString, int32> AAnimatedTileMap::ExtractAllTileUserData(FString Metad
 
 				if (MetadatumIter->Contains(MetadataLabel)) {
 
-					FString Key, Metadatum;
-					MetadatumIter->Split(TEXT("="), &Key, &Metadatum);
+					FString Key, Datum;
+					MetadatumIter->Split(TEXT("="), &Key, &Datum);
 
-					Metadata.AddUnique(Metadatum, index);
+					Metadata.AddUnique(Datum, index);
 
 				}
 			}

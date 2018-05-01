@@ -200,9 +200,9 @@ public:
 	float GetWhiteNoise(float x, float y);
 	float GetWhiteNoiseInt(int x, int y);
 
-	FORCEINLINE float GetNoise(float x, float y);
-	FORCEINLINE float GetNoise2D(float x, float y);
-	FORCEINLINE FVector GetNoise2DDeriv(float x, float y);
+	float GetNoise(float x, float y);
+	float GetNoise2D(float x, float y);
+	FVector GetNoise2DDeriv(float x, float y);
 
 	void PositionWarp(float& x, float& y);
 	void PositionWarpFractal(float& x, float& y);
