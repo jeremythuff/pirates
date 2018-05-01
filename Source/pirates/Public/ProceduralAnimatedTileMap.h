@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AnimatedTileMap.h"
+#include "Fastnoise/FastNoise.h"
 #include "ProceduralAnimatedTileMap.generated.h"
 
 /**
@@ -24,7 +25,7 @@ protected:
 
 	void GenerateMap();
 
-private:
+protected:
 
 	/** The base tile set used in map generation. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
@@ -32,33 +33,59 @@ private:
 
 	/** The number of rows the generated map should have. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		int32 Rows = 4;
+		int32 Rows = 10;
 
 	/** The number of columns the generated map should have. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		int32 Columns = 4;
+		int32 Columns = 10;
 
-	/** The number of columns the generated map should have. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float WaterLevel = 100.0f;
+
+	/** The same seed will always generate the same map with the same settings. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 		int32 Seed = FMath::RandRange(0, 999999);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float Frequency = 0.95f;
+	/** The type of noise used to generate the map. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Noise", meta = (AllowPrivateAccess = "true"))
+		ENoiseType NoiseType = ENoiseType::Simplex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float Octaves = 0.95f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Noise", meta = (AllowPrivateAccess = "true"))
+		float Frequency = 0.25f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float Gain = 0.25f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Noise", meta = (AllowPrivateAccess = "true"))
+		EInterp Interpolation = EInterp::InterpLinear;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float Lacunarity = 0.25f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Fractal", meta = (AllowPrivateAccess = "true"))
+		EFractalType FractalType = EFractalType::FBM;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Fractal", meta = (AllowPrivateAccess = "true"))
+		float Octaves = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-		float WaterLevel = 0.85f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Fractal", meta = (AllowPrivateAccess = "true"))
+		float Lacunarity = 2.0f;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Fractal", meta = (AllowPrivateAccess = "true"))
+		float Gain = 0.4f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Cellular", meta = (AllowPrivateAccess = "true"))
+		ECellularDistanceFunction CellularDistance = ECellularDistanceFunction::Natural;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Cellular", meta = (AllowPrivateAccess = "true"))
+		ECellularReturnType CellularReturnType = ECellularReturnType::Distance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Warp", meta = (AllowPrivateAccess = "true"))
+		EPositionWarpType WarpType = EPositionWarpType::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation|Warp", meta = (AllowPrivateAccess = "true"))
+		float WarpAmp = 1.0f;
+
+
+	UPROPERTY(Transient, meta = (AllowPrivateAccess = "true"))
 		class UFastNoise * FastNoise;
+
+	UPROPERTY(Transient, meta = (AllowPrivateAccess = "true"))
+		class UFastNoise * CellNoise;
 
 	class TMultiMap<FString, int32> TileTypes;
 	

@@ -117,7 +117,7 @@ FString AAnimatedTileMap::ExtractTileUserData(int32 TileX, int32 TileY, int32 La
 		}
 	}
 
-	return TEXT("NO_Name");
+	return TEXT("None");
 
 }
 

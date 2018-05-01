@@ -29,11 +29,9 @@ private:
 	UPROPERTY(Category = "Rigging", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UPaperSpriteComponent * ForemastSprite;
 
-#if WITH_EDITORONLY_DATA
 	/** Component shown in the editor only to indicate character facing */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rigging", meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* RiggingForward;
-#endif
 
 protected:
 	// Called when the game starts or when spawned
@@ -43,10 +41,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-#if WITH_EDITORONLY_DATA
 	/** Returns ArrowComponent subobject **/
 	class UArrowComponent* GetRiggingForward() const { return RiggingForward; }
-#endif
 	
 	
 };
