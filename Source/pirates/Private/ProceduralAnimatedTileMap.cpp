@@ -237,15 +237,28 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 						//Water on 1 Side
 						else if (SurroundingTileNoise[TEXT("BeachTileN")] < WaterLevel) {
 							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("beachN"));
+
+							PlaceTile(TileX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+							PlaceTile(TileX, TileY-1, ShallowsLayer->GetLayerIndex(), TEXT("shallowsN"));
 						}
 						else if (SurroundingTileNoise[TEXT("BeachTileE")] < WaterLevel) {
 							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("beachE"));
+
+							PlaceTile(TileX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+							PlaceTile(TileX+1, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsE"));
 						}
 						else if (SurroundingTileNoise[TEXT("BeachTileS")] < WaterLevel) {
 							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("beachS"));
+
+							PlaceTile(TileX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+							PlaceTile(TileX, TileY+1, ShallowsLayer->GetLayerIndex(), TEXT("shallowsS"));
 						}
 						else if (SurroundingTileNoise[TEXT("BeachTileW")] < WaterLevel) {
 							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("beachW"));
+
+							PlaceTile(TileX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+							PlaceTile(TileX-1, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsW"));
+						
 						}
 
 						// 4 Diagnals are water
