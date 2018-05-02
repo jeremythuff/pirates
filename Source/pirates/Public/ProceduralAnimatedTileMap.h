@@ -42,6 +42,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 		float WaterLevel = 100.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float ShallowsThickness = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float BeachThickness = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+		float ForestSize = 100.0f;
+
 	/** The same seed will always generate the same map with the same settings. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 		int32 Seed = FMath::RandRange(0, 999999);
@@ -90,6 +99,14 @@ protected:
 	class TMultiMap<FString, int32> TileTypes;
 	
 	void PositionMapTopDown();
+
+	bool TileIsSuroundedByOnAllSides(FVector2D Tile, float Threshold);
+
+	bool TileIsSuroundedByOnAllSidesTwoDeep(FVector2D Tile, float Threshold);
+
+	TMap<FString, bool> SidesTouching(FVector2D Tile, float Threshold);
+
+	TMap<FString, bool> SidesTouchingTwoDeep(FVector2D Tile, float Threshold);
 
 	float GetNoise(int32 X, int32 Y);
 

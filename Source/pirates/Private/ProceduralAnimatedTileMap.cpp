@@ -100,248 +100,181 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		// Warp Settings
 		FastNoise->SetPositionWarpAmp(WarpAmp);
 		FastNoise->SetPositionWarpType(WarpType);
-		
+
+		float ShallowsLevel = WaterLevel - ShallowsThickness;
+		float GrassLevel = ShallowsLevel + BeachThickness;
+		float TreeLevel = GrassLevel + ForestSize;		
+
 		for (int32 TileX = 0; TileX < Rows; TileX++) {
 			for (int32 TileY = 0; TileY < Columns; TileY++) {
 
 				FVector2D Tile = FVector2D(TileX, TileY);
 
-				float Noise = GetNoise(TileX, TileY);
+				float Noise = GetNoise(Tile.X, Tile.Y);
 
-				PlaceTile(TileX, TileY, OceanLayer->GetLayerIndex(), TEXT("water"));
+				PlaceTile(Tile.X, Tile.Y, OceanLayer->GetLayerIndex(), TEXT("water"));
 
-				if (Noise >= WaterLevel) {
-
-					TMap<FString, FVector2D> SurroundingTiles;
-					SurroundingTiles.Add(TEXT("TileN"), FVector2D(TileX, TileY - 1));
-					SurroundingTiles.Add(TEXT("TileNE"), FVector2D(TileX + 1, TileY - 1));
-					SurroundingTiles.Add(TEXT("TileE"), FVector2D(TileX + 1, TileY));
-					SurroundingTiles.Add(TEXT("TileSE"), FVector2D(TileX + 1, TileY + 1));
-					SurroundingTiles.Add(TEXT("TileS"), FVector2D(TileX, TileY + 1));
-					SurroundingTiles.Add(TEXT("TileSW"), FVector2D(TileX - 1, TileY + 1));
-					SurroundingTiles.Add(TEXT("TileW"), FVector2D(TileX - 1, TileY));
-					SurroundingTiles.Add(TEXT("TileNW"), FVector2D(TileX - 1, TileY - 1));
-					SurroundingTiles.Add(TEXT("Tile2N"), FVector2D(TileX, TileY - 2));
-					SurroundingTiles.Add(TEXT("Tile2NxNE"), FVector2D(TileX + 1, TileY - 2));
-					SurroundingTiles.Add(TEXT("Tile2NE"), FVector2D(TileX + 2, TileY - 2));
-					SurroundingTiles.Add(TEXT("Tile2ExNE"), FVector2D(TileX + 2, TileY + 1));
-					SurroundingTiles.Add(TEXT("Tile2E"), FVector2D(TileX + 2, TileY));
-					SurroundingTiles.Add(TEXT("Tile2ExSE"), FVector2D(TileX + 2, TileY + 1));
-					SurroundingTiles.Add(TEXT("Tile2SE"), FVector2D(TileX + 2, TileY + 2));
-					SurroundingTiles.Add(TEXT("Tile2S"), FVector2D(TileX, TileY + 2));
-					SurroundingTiles.Add(TEXT("Tile2SxSW"), FVector2D(TileX - 1, TileY + 2));
-					SurroundingTiles.Add(TEXT("Tile2SW"), FVector2D(TileX - 2, TileY + 2));
-					SurroundingTiles.Add(TEXT("Tile2WxSW"), FVector2D(TileX - 2, TileY + 1));
-					SurroundingTiles.Add(TEXT("Tile2W"), FVector2D(TileX - 2, TileY));
-					SurroundingTiles.Add(TEXT("Tile2WxNW"), FVector2D(TileX - 2, TileY - 1));
-					SurroundingTiles.Add(TEXT("Tile2NW"), FVector2D(TileX - 2, TileY - 2));
-
-					bool SuroundedByGround = true;
-					TMap<FString, float> SurroundingTileNoise;
-					for (auto& SGT : SurroundingTiles)
-					{
-
-						float SGTNoise = AProceduralAnimatedTileMap::GetNoise(SGT.Value.X, SGT.Value.Y);
-						
-						SurroundingTileNoise.Add(SGT.Key, SGTNoise);
-						
-						if (SuroundedByGround) {
-							if (SGTNoise < WaterLevel) {
-								SuroundedByGround = false;
-							}
-						}
+				if (Noise > ShallowsLevel) {
+					if (TileIsSuroundedByOnAllSidesTwoDeep(Tile, ShallowsLevel)) {
+						// At least two tiles from any shallows
+						PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("grass"));
 					}
-					
-					if (SuroundedByGround) {
-						PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("grass"));
+					else if (TileIsSuroundedByOnAllSides(Tile, ShallowsLevel)) {
+						// At least one tile from any shallows
+						PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("beach"));
 					}
 					else {
+						// In the shallows 
+						TMap<FString, bool> Touching = SidesTouching(Tile, WaterLevel);
 						
-						//Water On 4 Sides
-						if (
-							SurroundingTileNoise[TEXT("TileN")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileS")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileW")] < WaterLevel
+						// 4 Sides
+						if (Touching["N"] &&
+							Touching["NE"] &&
+							Touching["E"] &&
+							Touching["SE"] &&
+							Touching["S"] &&
+							Touching["SW"] &&
+							Touching["NW"] &&
+							Touching["W"]
 						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
 						}
-
-						//Water On 3 Sides
-						if (
-							SurroundingTileNoise[TEXT("TileE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileS")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileW")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("penisulaS"));
-						} else if (
-							SurroundingTileNoise[TEXT("TileN")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileS")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileW")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("penisulaW"));
-						} else if (
-							SurroundingTileNoise[TEXT("TileN")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileW")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("penisulaN"));
-						} else if (
-							SurroundingTileNoise[TEXT("TileN")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileS")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("penisulaE"));
-						}
-
-						//Water On 2 Sides
-						else if (
-							SurroundingTileNoise[TEXT("TileN")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileS")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("isthmusEW"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileN")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileW")] < WaterLevel
-							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("shallowsNW"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileN")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileE")] < WaterLevel
-							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("shallowsNE"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileS")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileE")] < WaterLevel
-							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("shallowsSE"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileS")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileW")] < WaterLevel
-							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("shallowsSW"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileW")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileE")] < WaterLevel
-							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("isthmusNS"));
-						}
-
-						//Water on 1 Side
-						else if (SurroundingTileNoise[TEXT("TileN")] < WaterLevel) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("shallowsN"));
-
-							PlaceTile(SurroundingTiles[TEXT("TileS")].X, SurroundingTiles[TEXT("TileS")].Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-							PlaceTile(SurroundingTiles[TEXT("TileS")].X, SurroundingTiles[TEXT("TileS")].Y, GroundLayer->GetLayerIndex(), TEXT("beachN"));
-
-						}
-						else if (SurroundingTileNoise[TEXT("TileE")] < WaterLevel) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("shallowsE"));
-						}
-						else if (SurroundingTileNoise[TEXT("TileS")] < WaterLevel) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("shallowsS"));
-						}
-						else if (SurroundingTileNoise[TEXT("TileW")] < WaterLevel) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("shallowsW"));
 						
+						// 3 Sides
+						else if (
+							Touching["N"] &&
+							Touching["E"] &&
+							Touching["S"] 
+						) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
 						}
 
-						// 4 Diagnals are water
 						else if (
-							SurroundingTileNoise[TEXT("TileNE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSW")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileNW")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
+							Touching["E"] &&
+							Touching["S"] &&
+							Touching["W"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
 						}
 
-						// Three diagonals are water
 						else if (
-							SurroundingTileNoise[TEXT("TileNE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSW")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileSE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSW")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileNW")] < WaterLevel
+							Touching["S"] &&
+							Touching["W"] &&
+							Touching["N"]
 							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileSW")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileNW")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileNE")] < WaterLevel
-							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileNW")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileNE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSE")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
 						}
 
-						//// Two diagonals are water
 						else if (
-							SurroundingTileNoise[TEXT("TileNE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSE")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileSE")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSW")] < WaterLevel
+							Touching["W"] &&
+							Touching["N"] &&
+							Touching["E"]
 							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileSW")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileNW")] < WaterLevel
-							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
-						}
-						else if (
-							SurroundingTileNoise[TEXT("TileNW")] < WaterLevel &&
-							SurroundingTileNoise[TEXT("TileSE")] < WaterLevel
-							) {
-							PlaceTile(TileX, TileY, GroundLayer->GetLayerIndex(), TEXT("sand"));
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
 						}
 
-						//One diagonal is water
+						// 2 Sides
+
 						else if (
-							SurroundingTileNoise[TEXT("TileNE")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerNE"));
+							Touching["N"] &&
+							Touching["E"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsNE"));
 						}
+
 						else if (
-							SurroundingTileNoise[TEXT("TileSE")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerSE"));
+							Touching["S"] &&
+							Touching["E"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsSE"));
 						}
+
 						else if (
-							SurroundingTileNoise[TEXT("TileSW")] < WaterLevel
-						) {
-							PlaceTile(TileX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerSW"));
+							Touching["S"] &&
+							Touching["W"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsSW"));
 						}
+
 						else if (
-							SurroundingTileNoise[TEXT("TileNW")] < WaterLevel 
-						) {
-							PlaceTile(TileX, TileY, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerNW"));
+							Touching["N"] &&
+							Touching["W"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsNW"));
 						}
+
+						else if (
+							Touching["N"] &&
+							Touching["S"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+						}
+
+						else if (
+							Touching["E"] &&
+							Touching["W"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+						}
+						
+						// One Side
+
+						else if (
+							Touching["N"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerN"));
+						}
+
+						else if (
+							Touching["E"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerE"));
+						}
+
+						else if (
+							Touching["S"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerS"));
+						}
+
+						else if (
+							Touching["W"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerW"));
+						}
+
+						else if (
+							Touching["NE"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerNE"));
+						}
+
+						else if (
+							Touching["SE"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerSE"));
+						}
+
+						else if (
+							Touching["SW"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerSW"));
+						}
+
+						else if (
+							Touching["NW"]
+							) {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerNW"));
+						}
+						
+						else {
+							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
+						}
+
+
 					}
-				
 				}
-
+				
 				UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels and %f Noise"), TileX, TileY, OceanLayer->GetLayerIndex(), TileSize, Noise);
 
 			}
@@ -356,6 +289,92 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 	BaseTileMap->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	BaseTileMap->SetDefaultCollisionThickness(1000.0f);
 	BaseTileMap->RebuildCollision();
+}
+
+TMap<FString, bool> AProceduralAnimatedTileMap::SidesTouching(FVector2D Tile, float Threshold) {
+
+	float TileNoiseN = AProceduralAnimatedTileMap::GetNoise(Tile.X, Tile.Y - 1);
+	float TileNoiseNE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y - 1);
+	float TileNoiseE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y);
+	float TileNoiseSE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y + 1);
+	float TileNoiseS = AProceduralAnimatedTileMap::GetNoise(Tile.X, Tile.Y + 1);
+	float TileNoiseSW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 1, Tile.Y + 1);
+	float TileNoiseW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 1, Tile.Y);
+	float TileNoiseNW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 1, Tile.Y - 1);
+
+	TMap<FString, bool> SidesTouching;
+	SidesTouching.Add(TEXT("N"), TileNoiseN <= Threshold);
+	SidesTouching.Add(TEXT("NE"), TileNoiseNE <= Threshold);
+	SidesTouching.Add(TEXT("E"), TileNoiseE <= Threshold);
+	SidesTouching.Add(TEXT("SE"), TileNoiseSE <= Threshold);
+	SidesTouching.Add(TEXT("S"), TileNoiseS <= Threshold);
+	SidesTouching.Add(TEXT("SW"), TileNoiseSW <= Threshold);
+	SidesTouching.Add(TEXT("W"), TileNoiseW <= Threshold);
+	SidesTouching.Add(TEXT("NW"), TileNoiseNW <= Threshold);
+
+	return SidesTouching;
+}
+
+bool AProceduralAnimatedTileMap::TileIsSuroundedByOnAllSides(FVector2D Tile, float Threshold) {
+
+	float TileNoiseN = AProceduralAnimatedTileMap::GetNoise(Tile.X, Tile.Y - 1);
+	float TileNoiseNE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y - 1);
+	float TileNoiseE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y);
+	float TileNoiseSE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y + 1);
+	float TileNoiseS = AProceduralAnimatedTileMap::GetNoise(Tile.X, Tile.Y + 1);
+	float TileNoiseSW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 1, Tile.Y + 1);
+	float TileNoiseW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 1, Tile.Y);
+	float TileNoiseNW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 1, Tile.Y - 1);
+
+	return	(
+		TileNoiseN > Threshold &&
+		TileNoiseNE > Threshold &&
+		TileNoiseE > Threshold &&
+		TileNoiseSE > Threshold &&
+		TileNoiseS > Threshold &&
+		TileNoiseSW > Threshold &&
+		TileNoiseW > Threshold &&
+		TileNoiseNW > Threshold
+	);
+}
+
+bool AProceduralAnimatedTileMap::TileIsSuroundedByOnAllSidesTwoDeep(FVector2D Tile, float Threshold) {
+
+	float TileNoiseN = AProceduralAnimatedTileMap::GetNoise(Tile.X, Tile.Y - 2);
+	float TileNoiseNxNE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y - 2);
+	float TileNoiseNE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 2, Tile.Y - 2);
+	float TileNoiseExNE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 2, Tile.Y - 1);
+	float TileNoiseE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 2, Tile.Y);
+	float TileNoiseExSE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 2, Tile.Y + 1);
+	float TileNoiseSE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 2, Tile.Y + 2);
+	float TileNoiseSxSE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y + 2);
+	float TileNoiseS = AProceduralAnimatedTileMap::GetNoise(Tile.X, Tile.Y + 2);
+	float TileNoiseSxSW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 1, Tile.Y + 2);
+	float TileNoiseSW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 2, Tile.Y + 2);
+	float TileNoiseWxSW = AProceduralAnimatedTileMap::GetNoise(Tile.X + 2, Tile.Y + 1);
+	float TileNoiseW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 2, Tile.Y);
+	float TileNoiseWxNW = AProceduralAnimatedTileMap::GetNoise(Tile.X + 2, Tile.Y - 1);
+	float TileNoiseNW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 2, Tile.Y - 2);
+	float TileNoiseNxNW = AProceduralAnimatedTileMap::GetNoise(Tile.X - 1, Tile.Y - 2);
+
+	return	(
+		TileNoiseN > Threshold &&
+		TileNoiseNxNE > Threshold &&
+		TileNoiseNE > Threshold &&
+		TileNoiseExNE > Threshold &&
+		TileNoiseE > Threshold &&
+		TileNoiseExSE > Threshold &&
+		TileNoiseSE > Threshold &&
+		TileNoiseSxSE > Threshold &&
+		TileNoiseS > Threshold &&
+		TileNoiseSxSW > Threshold &&
+		TileNoiseSW > Threshold &&
+		TileNoiseSxSW > Threshold &&
+		TileNoiseW > Threshold &&
+		TileNoiseWxNW > Threshold &&
+		TileNoiseNW > Threshold &&
+		TileNoiseNxNW > Threshold
+	);
 }
 
 float AProceduralAnimatedTileMap::GetNoise(int32 X, int32 Y) {
