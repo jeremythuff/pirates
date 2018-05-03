@@ -104,12 +104,20 @@ protected:
 
 	bool TileIsSuroundedByOnAllSidesTwoDeep(FVector2D Tile, float Threshold);
 
+	bool TileIsTouching(FVector2D Tile, float Threshold);
+
+	FString SelectTileName(FVector2D Tile, float Threshold, FString NameRoot);
+
 	TMap<FString, bool> SidesTouching(FVector2D Tile, float Threshold);
 
 	TMap<FString, bool> SidesTouchingTwoDeep(FVector2D Tile, float Threshold);
 
-	float GetNoise(int32 X, int32 Y);
+	TMap<FVector2D, float> Noise;
 
+	float GetNoise(FVector2D Tile);
+
+	float GetNoise(float X, float Y);
+	
 	void PlaceTile(int32 TileX, int32 TileY, int32 LayerIndex, FString TileType);
 	
 };

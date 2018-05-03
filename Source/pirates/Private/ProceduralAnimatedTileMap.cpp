@@ -73,7 +73,7 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		BaseTileMap->TileMap->SelectedTileSet = BaseTileSet;
 
 		TileTypes = ExtractAllTileUserData(TEXT("tiletype"));
-		
+
 		int32 TileSize = BaseTileSet->GetTileSize().GetMax();
 
 		BaseTileMap->TileMap->TileWidth = TileSize;
@@ -91,7 +91,7 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		FastNoise->SetFractalOctaves(Octaves);
 		FastNoise->SetFractalLacunarity(Lacunarity);
 		FastNoise->SetFractalGain(Gain);
-		
+
 		//Cellular Settings
 		FastNoise->SetCellularDistanceFunction(CellularDistance);
 		FastNoise->SetCellularReturnType(CellularReturnType);
@@ -101,185 +101,40 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		FastNoise->SetPositionWarpAmp(WarpAmp);
 		FastNoise->SetPositionWarpType(WarpType);
 
-		float ShallowsLevel = WaterLevel - ShallowsThickness;
-		float GrassLevel = ShallowsLevel + BeachThickness;
-		float TreeLevel = GrassLevel + ForestSize;		
+		TMap<FVector2D, float> noise;
+		Noise = noise;
 
 		for (int32 TileX = 0; TileX < Rows; TileX++) {
 			for (int32 TileY = 0; TileY < Columns; TileY++) {
-
-				FVector2D Tile = FVector2D(TileX, TileY);
-
-				float Noise = GetNoise(Tile.X, Tile.Y);
-
-				PlaceTile(Tile.X, Tile.Y, OceanLayer->GetLayerIndex(), TEXT("water"));
-
-				if (Noise > ShallowsLevel) {
-					if (TileIsSuroundedByOnAllSidesTwoDeep(Tile, ShallowsLevel)) {
-						// At least two tiles from any shallows
-						PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("grass"));
-					}
-					else if (TileIsSuroundedByOnAllSides(Tile, ShallowsLevel)) {
-						// At least one tile from any shallows
-						PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("beach"));
-					}
-					else {
-						// In the shallows 
-						TMap<FString, bool> Touching = SidesTouching(Tile, WaterLevel);
-						
-						// 4 Sides
-						if (Touching["N"] &&
-							Touching["NE"] &&
-							Touching["E"] &&
-							Touching["SE"] &&
-							Touching["S"] &&
-							Touching["SW"] &&
-							Touching["NW"] &&
-							Touching["W"]
-						) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-						}
-						
-						// 3 Sides
-						else if (
-							Touching["N"] &&
-							Touching["E"] &&
-							Touching["S"] 
-						) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-						}
-
-						else if (
-							Touching["E"] &&
-							Touching["S"] &&
-							Touching["W"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-						}
-
-						else if (
-							Touching["S"] &&
-							Touching["W"] &&
-							Touching["N"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-						}
-
-						else if (
-							Touching["W"] &&
-							Touching["N"] &&
-							Touching["E"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-						}
-
-						// 2 Sides
-
-						else if (
-							Touching["N"] &&
-							Touching["E"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsNE"));
-						}
-
-						else if (
-							Touching["S"] &&
-							Touching["E"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsSE"));
-						}
-
-						else if (
-							Touching["S"] &&
-							Touching["W"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsSW"));
-						}
-
-						else if (
-							Touching["N"] &&
-							Touching["W"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsNW"));
-						}
-
-						else if (
-							Touching["N"] &&
-							Touching["S"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-						}
-
-						else if (
-							Touching["E"] &&
-							Touching["W"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-						}
-						
-						// One Side
-
-						else if (
-							Touching["N"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerN"));
-						}
-
-						else if (
-							Touching["E"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerE"));
-						}
-
-						else if (
-							Touching["S"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerS"));
-						}
-
-						else if (
-							Touching["W"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerW"));
-						}
-
-						else if (
-							Touching["NE"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerNE"));
-						}
-
-						else if (
-							Touching["SE"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerSE"));
-						}
-
-						else if (
-							Touching["SW"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerSW"));
-						}
-
-						else if (
-							Touching["NW"]
-							) {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallowsCornerNW"));
-						}
-						
-						else {
-							PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TEXT("shallows"));
-						}
-
-
-					}
-				}
-				
-				UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels and %f Noise"), TileX, TileY, OceanLayer->GetLayerIndex(), TileSize, Noise);
-
+				AProceduralAnimatedTileMap::Noise.Add(FVector2D(TileX, TileY), (FastNoise->GetNoise(TileX, TileY)) * 1000.f);
 			}
 		}
 
+		float ShallowsStart = WaterLevel;
+		float ShallowsStop = ShallowsStart + ShallowsThickness;
+		float GrassStart = ShallowsStop;
+
+		for (auto& Entry : Noise)
+		{
+			FVector2D Tile = Entry.Key;
+
+			float Noise = Entry.Value;
+
+			PlaceTile(Tile.X, Tile.Y, OceanLayer->GetLayerIndex(), TEXT("water"));
+
+			if (Noise > ShallowsStart && Noise <= ShallowsStop) {
+				FString TileName = SelectTileName(Tile, ShallowsStart, TEXT("shallows"));
+				PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TileName);
+			}
+			else if (Noise > GrassStart) {
+				FString TileName = SelectTileName(Tile, GrassStart - 1.0f, TEXT("grass"));
+				PlaceTile(Tile.X, Tile.Y, GroundLayer->GetLayerIndex(), TileName);
+				FString STileName = SelectTileName(Tile, GrassStart - 1.0f, TEXT("grass"));
+				PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), STileName);
+			}
+
+			UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels and %f Noise"), Tile.X, Tile.Y, OceanLayer->GetLayerIndex(), TileSize, Noise);
+		}
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("ProceduralAnimatedTileMap must have a TileSet."))
@@ -291,8 +146,518 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 	BaseTileMap->RebuildCollision();
 }
 
-TMap<FString, bool> AProceduralAnimatedTileMap::SidesTouching(FVector2D Tile, float Threshold) {
+FString AProceduralAnimatedTileMap::SelectTileName(FVector2D Tile, float Threshold, FString NameRoot)
+{
+	TMap<FString, bool> TileTouching = AProceduralAnimatedTileMap::SidesTouching(Tile, Threshold);
+	UE_LOG(LogTemp, Warning, TEXT("NameRoot = %s, Threshold = %f"), *NameRoot, Threshold, (TileTouching["N"] ? TEXT("True") : TEXT("False")));
+	// Eight Sides
+	if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		//TODO: Create a solo tile single circle.
+	}
 
+	// 7 Sides
+
+	// 6 Sides
+
+	// 5 Sides
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("NE"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("SE"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("SW"));
+	}
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("NW"));
+	}
+
+	// 4 Sides
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("NE"));
+	}
+	else if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("NE"));
+	}
+
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("SE"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("SE"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("SW"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("SW"));
+	}
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("NW"));
+	}
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("NW"));
+	}
+
+	// 3 Sides 
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("N"));
+	}
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("NE"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("E"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("SE"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("S"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("SW"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("W"));
+	}
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("NW"));
+	}
+
+
+	// 2 Sides
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("N"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("E"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("E"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("S"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("S"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("W"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("W"));
+	}
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+	) {
+		NameRoot.Append(TEXT("N"));
+	}
+
+	// 1 Side
+
+	else if (
+		TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("N"));
+	}
+	
+	else if (
+		!TileTouching[TEXT("N")] &&
+		TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("CNE"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("E"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("CSE"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("S"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("CSW"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		TileTouching[TEXT("W")] &&
+		!TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("W"));
+	}
+
+	else if (
+		!TileTouching[TEXT("N")] &&
+		!TileTouching[TEXT("NE")] &&
+		!TileTouching[TEXT("E")] &&
+		!TileTouching[TEXT("SE")] &&
+		!TileTouching[TEXT("S")] &&
+		!TileTouching[TEXT("SW")] &&
+		!TileTouching[TEXT("W")] &&
+		TileTouching[TEXT("NW")]
+		) {
+		NameRoot.Append(TEXT("CNW"));
+	}
+	return NameRoot;
+}
+
+bool AProceduralAnimatedTileMap::TileIsTouching(FVector2D Tile, float Threshold)
+{
+	TMap<FString, bool> TileTouching = AProceduralAnimatedTileMap::SidesTouching(Tile, Threshold);
+	TArray<bool> Vals;
+	TileTouching.GenerateValueArray(Vals);
+	return Vals.Contains(true);
+}
+
+TMap<FString, bool> AProceduralAnimatedTileMap::SidesTouching(FVector2D Tile, float Threshold) {
 	float TileNoiseN = AProceduralAnimatedTileMap::GetNoise(Tile.X, Tile.Y - 1);
 	float TileNoiseNE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y - 1);
 	float TileNoiseE = AProceduralAnimatedTileMap::GetNoise(Tile.X + 1, Tile.Y);
@@ -304,6 +669,7 @@ TMap<FString, bool> AProceduralAnimatedTileMap::SidesTouching(FVector2D Tile, fl
 
 	TMap<FString, bool> SidesTouching;
 	SidesTouching.Add(TEXT("N"), TileNoiseN <= Threshold);
+	UE_LOG(LogTemp, Warning, TEXT("Checking Threshold = %f against TileNoiseN = %f"), Threshold, TileNoiseN);
 	SidesTouching.Add(TEXT("NE"), TileNoiseNE <= Threshold);
 	SidesTouching.Add(TEXT("E"), TileNoiseE <= Threshold);
 	SidesTouching.Add(TEXT("SE"), TileNoiseSE <= Threshold);
@@ -377,8 +743,21 @@ bool AProceduralAnimatedTileMap::TileIsSuroundedByOnAllSidesTwoDeep(FVector2D Ti
 	);
 }
 
-float AProceduralAnimatedTileMap::GetNoise(int32 X, int32 Y) {
-	return (FastNoise->GetNoise(X, Y)) * 1000.f;
+
+float AProceduralAnimatedTileMap::GetNoise(FVector2D Tile) {
+	float noise = NULL;
+	for (auto& Elem : Noise)
+	{
+		if (Elem.Key.Equals(Tile)) {
+			noise = Elem.Value;
+		}
+	}
+
+	return noise;
+}
+
+float AProceduralAnimatedTileMap::GetNoise(float X, float Y) {
+	return AProceduralAnimatedTileMap::GetNoise(FVector2D(X,Y));
 }
 
 void AProceduralAnimatedTileMap::PositionMapTopDown() {
