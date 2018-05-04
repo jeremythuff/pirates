@@ -33,6 +33,14 @@ void ARiggingActor::BeginPlay()
 	
 }
 
+void ARiggingActor::SetMainMastSprite(UPaperSprite * NewMainMastSprite) {
+	MainMastSprite->SetSprite(NewMainMastSprite);
+}
+
+void ARiggingActor::SetForeMastSprite(UPaperSprite * NewFormastSprite) {
+	ForemastSprite->SetSprite(NewFormastSprite);
+}
+
 // Called every frame
 void ARiggingActor::Tick(float DeltaTime)
 {

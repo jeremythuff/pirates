@@ -69,22 +69,86 @@ AShipPawn::AShipPawn()
 
 	// Create an instance of our movement component, and tell it to update the root.
 	ShipMovementComponent = CreateDefaultSubobject<UShipFloatingPawnMovement>(TEXT("ShipFloatingPawnMovement"));
-  ShipMovementComponent->UpdatedComponent = RootComponent;
+	ShipMovementComponent->UpdatedComponent = RootComponent;
 }
 
-UPawnMovementComponent* AShipPawn::GetMovementComponent() const
-{
+UPawnMovementComponent* AShipPawn::GetMovementComponent() const {
 	return ShipMovementComponent;
+}
+
+//void AShipPawn::OnHit(AActor * SelfActor, AActor * OtherActor, FVector NormalImpulse, const FHitResult & Hit) {
+//
+//}
+
+void AShipPawn::TestHit() {
+	HP -= 5;
+	AShipPawn::UpdateRigging();
+	UE_LOG(LogTemp, Warning, TEXT("HP: %d"), HP);
+}
+
+
+
+void AShipPawn::UpdateRigging()
+{
+	ARiggingActor* ShipRiggingChildActor = ((ARiggingActor*)ShipRigging->GetChildActor());
+
+	UPaperSprite* NewMainMastSprite = NULL;
+	UPaperSprite* NewForeMastSprite = NULL;
+
+	if (HP > 60) {
+		if (ShipHullFullHP) {
+			HullSprite->SetSprite(ShipHullFullHP);
+			NewMainMastSprite = ShipRiggingChildActor->MainMastSpriteFullHP;
+			UPaperSprite* ForeMastSpriteFullHP = ShipRiggingChildActor->ForeMastSpriteFullHP;
+		}
+	}
+	else if(HP <= 60 && HP > 30)
+	{
+		if (ShipHullHalfHP) {
+			HullSprite->SetSprite(ShipHullHalfHP);
+			NewMainMastSprite = ShipRiggingChildActor->MainMastSpriteHalfHP;
+			NewForeMastSprite = ShipRiggingChildActor->ForeMastSpriteHalfHP;
+		}
+	}
+	else if (HP <= 30 && HP > 0)
+	{
+		if (ShipHullLowHP) {
+			HullSprite->SetSprite(ShipHullLowHP);
+			NewMainMastSprite = ShipRiggingChildActor->MainMastSpriteLowHP;
+			NewForeMastSprite = ShipRiggingChildActor->ForeMastSpriteLowHP;
+		}
+	}
+	else {
+		if (ShipHullNoHP) {
+			HullSprite->SetSprite(ShipHullNoHP);
+			NewMainMastSprite = ShipRiggingChildActor->MainMastSpriteNoHP;
+			NewForeMastSprite = ShipRiggingChildActor->ForeMastSpriteNoHP;
+		}
+		// End Game
+	}
+
+
+	if (NewMainMastSprite) {
+		ShipRiggingChildActor->SetMainMastSprite(NewMainMastSprite);
+	}
+
+	if(NewForeMastSprite) {
+		ShipRiggingChildActor->SetForeMastSprite(NewForeMastSprite);
+	}
+
 }
 
 // Called when the game starts or when spawned
 void AShipPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
 	SpringArm->bUsePawnControlRotation = false;
 	SpringArm->bInheritPitch = false;
 	SpringArm->bInheritRoll = false;
 	SpringArm->bInheritYaw = false;
+
+	AShipPawn::UpdateRigging();
 }
 
 // Called every frame
