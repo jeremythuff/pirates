@@ -99,10 +99,6 @@ public:
 	class UArrowComponent* GetShipForward() const { return ShipForward; }
 	
 	UFUNCTION(BlueprintCallable)
-		void TestHit();
-		//void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
-
-	UFUNCTION(BlueprintCallable)
 		void UpdateRigging();
 
 };

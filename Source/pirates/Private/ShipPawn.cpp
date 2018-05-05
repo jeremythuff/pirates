@@ -76,15 +76,11 @@ UPawnMovementComponent* AShipPawn::GetMovementComponent() const {
 	return ShipMovementComponent;
 }
 
-//void AShipPawn::OnHit(AActor * SelfActor, AActor * OtherActor, FVector NormalImpulse, const FHitResult & Hit) {
-//
+//void AShipPawn::TestHit() {
+//	HP -= 5;
+//	AShipPawn::UpdateRigging();
+//	UE_LOG(LogTemp, Warning, TEXT("HP: %d"), HP);
 //}
-
-void AShipPawn::TestHit() {
-	HP -= 5;
-	AShipPawn::UpdateRigging();
-	UE_LOG(LogTemp, Warning, TEXT("HP: %d"), HP);
-}
 
 
 
