@@ -20,15 +20,17 @@ ACannonActor::ACannonActor()
 
 	CannonSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("CannonSprite"));
 	CannonSprite->SetupAttachment(CannonForward);
-	CannonSprite->SetWorldScale3D(FVector(2.0f, 2.0f, 0.0f));
-	//CannonSprite->SetWorldTransform(FTransform(FVector(2.0f,0.0f,2.0f)));
+		//CannonSprite->SetWorldTransform(FTransform(FVector(2.0f,0.0f,2.0f)));
 	CannonSprite->SetWorldRotation(FRotator(90.0f, 0.0, 0.0));
+	
 }
 
 // Called when the game starts or when spawned
 void ACannonActor::BeginPlay()
 {
 	Super::BeginPlay();
+	CannonRange->SetRelativeScale3D(FVector(20.0f, 20.0f, 20.0f));
+	CannonSprite->SetRelativeScale3D(FVector(2.5f, 1.0f, 2.5f));
 	
 }
 

@@ -76,10 +76,13 @@ UPawnMovementComponent* AShipPawn::GetMovementComponent() const {
 	return ShipMovementComponent;
 }
 
-//void AShipPawn::TestHit() {
-//	HP -= 5;
-//	AShipPawn::UpdateRigging();
-//	UE_LOG(LogTemp, Warning, TEXT("HP: %d"), HP);
+void AShipPawn::Hit_Implementation() {
+	HP -= FMath::RandRange(10,25);
+	AShipPawn::UpdateRigging();
+	UE_LOG(LogTemp, Warning, TEXT("HP: %d"), HP);
+}
+
+//void AShipPawn::Hit() {
 //}
 
 

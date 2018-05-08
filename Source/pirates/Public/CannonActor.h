@@ -11,7 +11,7 @@ class PIRATES_API ACannonActor : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
+public:
 	// Sets default values for this actor's properties
 	ACannonActor();
 
@@ -23,11 +23,11 @@ protected:
 
 	/** The collision component representing the cannons range*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class UCapsuleComponent * CannonRange;
+		class UCapsuleComponent* CannonRange;
 
 	/** The cannon sprite */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class UPaperSpriteComponent * CannonSprite;
+		class UPaperSpriteComponent* CannonSprite;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

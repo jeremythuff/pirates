@@ -745,7 +745,7 @@ bool AProceduralAnimatedTileMap::TileIsSuroundedByOnAllSidesTwoDeep(FVector2D Ti
 
 
 float AProceduralAnimatedTileMap::GetNoise(FVector2D Tile) {
-	float noise = NULL;
+	float noise;
 	for (auto& Elem : Noise)
 	{
 		if (Elem.Key.Equals(Tile)) {

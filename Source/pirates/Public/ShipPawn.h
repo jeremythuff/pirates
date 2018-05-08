@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "RiggingActor.h"
+#include "Hitable.h"
 #include "ShipPawn.generated.h"
 
 UCLASS()
-class PIRATES_API AShipPawn : public APawn
+class PIRATES_API AShipPawn : public APawn, public IHitable
 {
 
 	GENERATED_BODY()
@@ -98,6 +99,11 @@ public:
 	/** Returns ArrowComponent subobject **/
 	class UArrowComponent* GetShipForward() const { return ShipForward; }
 	
+	/** Impl for hitable */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Hitable")
+		void Hit();
+		virtual void  Hit_Implementation() override;
+
 	UFUNCTION(BlueprintCallable)
 		void UpdateRigging();
 
