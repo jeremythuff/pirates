@@ -12,9 +12,8 @@ ACannonBallActor::ACannonBallActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CannonBallCollision = CreateDefaultSubobject<USphereComponent>(TEXT("CannonBallCollision"));
-	CannonBallCollision->SetupAttachment(RootComponent);
-
+	RootComponent = CannonBallCollision = CreateDefaultSubobject<USphereComponent>(TEXT("CannonBallCollision"));
+	
 	CannonBallSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("CannonBallSprite"));
 	CannonBallSprite->SetupAttachment(CannonBallCollision);
 

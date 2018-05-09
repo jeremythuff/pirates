@@ -25,12 +25,15 @@ ACannonActor::ACannonActor()
 	
 }
 
+void ACannonActor::OnConstruction(const FTransform& Transform) {
+	CannonRange->SetRelativeScale3D(FVector(20.0f, 20.0f, 20.0f));
+	CannonSprite->SetRelativeScale3D(FVector(2.5f, 1.0f, 2.5f));
+}
+
 // Called when the game starts or when spawned
 void ACannonActor::BeginPlay()
 {
 	Super::BeginPlay();
-	CannonRange->SetRelativeScale3D(FVector(20.0f, 20.0f, 20.0f));
-	CannonSprite->SetRelativeScale3D(FVector(2.5f, 1.0f, 2.5f));
 	
 }
 
