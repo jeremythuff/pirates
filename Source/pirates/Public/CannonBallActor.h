@@ -22,11 +22,11 @@ protected:
 		class USphereComponent* CannonBallCollision;
 
 	/** The cannon ball sprite */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UPaperSpriteComponent* CannonBallSprite;
 
 		/** The cannon ball sprite */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UPaperFlipbookComponent* CannonBallExplosion;
 
 	// Called when the game starts or when spawned
