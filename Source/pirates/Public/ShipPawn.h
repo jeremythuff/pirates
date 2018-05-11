@@ -102,7 +102,12 @@ public:
 	/** Impl for hitable */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Hitable")
 		void Hit();
-		virtual void  Hit_Implementation() override;
+		virtual void Hit_Implementation() override;
+	
+	/** Impl for hitable */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Hitable")
+		int32 GetHP();
+		virtual int32  GetHP_Implementation() override;
 
 	UFUNCTION(BlueprintCallable)
 		void UpdateRigging();

@@ -82,10 +82,9 @@ void AShipPawn::Hit_Implementation() {
 	UE_LOG(LogTemp, Warning, TEXT("HP: %d"), HP);
 }
 
-//void AShipPawn::Hit() {
-//}
-
-
+int32 AShipPawn::GetHP_Implementation() {
+	return HP;
+}
 
 void AShipPawn::UpdateRigging()
 {

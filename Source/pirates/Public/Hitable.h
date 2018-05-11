@@ -26,5 +26,9 @@ public:
 	//classes using this interface must implement Hit
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hitable")
 		void Hit(); 
+
+	//classes using this interface must implement Hit
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hitable")
+		int32 GetHP(); 
 	
 };
