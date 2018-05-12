@@ -177,7 +177,7 @@ void AShipPawn::Turn(float AxisValue)
 {
 	float halfAxisValue = AxisValue / 2;
 	FRotator NewRotation = GetActorRotation();
-	NewRotation.Yaw += (AxisValue);
+	NewRotation.Yaw += (AxisValue*1.25f);
 	SetActorRotation(NewRotation);
-	//AShipPawn::MoveForward(FMath::Abs(halfAxisValue));
+	AShipPawn::MoveForward(FMath::Abs(halfAxisValue));
 }
