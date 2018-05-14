@@ -5,7 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PaperFlipbook.h"
+#include "PaperFlipbookComponent.h"
+#include "PaperTileMap.h"
+#include "PaperTileSet.h"
+#include "PaperTileMapComponent.h"
 #include "AnimatedTileMap.generated.h"
+
 
 UCLASS()
 class PIRATES_API AAnimatedTileMap : public AActor
@@ -28,9 +33,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Map|Animated Tiles", meta = (AllowPrivateAccess = "true", MetaClass = "UPaperFlipbook"))
 		TArray<UPaperFlipbook*> AnimatedTiles;
 
+	/** Component shown in the editor only to indicate north on plane facing */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UArrowComponent* NorthArrow;
+
 	void SetUpMapAnimation();
 
+	class TMultiMap<FString, int32> ExtractAllTileUserData(FString MetadataLabel);
+
+	class FString ExtractTileUserData(int32 TileX, int32 TileY, int32 LayerIndex, FString MetadataLabel);
+
 public:	
+
+	UFUNCTION(BlueprintCallable)
+	TMap<int32, FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

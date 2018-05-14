@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "RiggingActor.h"
+#include "Hitable.h"
 #include "ShipPawn.generated.h"
 
 UCLASS()
-class PIRATES_API AShipPawn : public APawn
+class PIRATES_API AShipPawn : public APawn, public IHitable
 {
 
 	GENERATED_BODY()
@@ -24,46 +26,65 @@ public:
 
 private:
 	/** The main Sprite associated with the (optional sub-object). */
-	UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UCapsuleComponent * ShipCapsule;
 	
-	/** The main Sprite associated with the (optional sub-object). */
-	UPROPERTY(Category = "Ship", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	/** */
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true", ClampMin = 0, ClampMax = 100))
+		int32 HP = 100;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UPaperSpriteComponent * HullSprite;
 
-	/** The rigging actor associated with the (optional sub-object). */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true", MetaClass = "ARiggingActor"))
+	/** The Hull sprite when at high hitpoints */
+	UPROPERTY(Category = "Ship|Hull", EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UPaperSprite* ShipHullFullHP;
+
+	/** The Hull spritte when at half hitpoints */
+	UPROPERTY(Category = "Ship|Hull", EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UPaperSprite* ShipHullHalfHP;
+
+	/** The Hull spritte when at low hitpoints */
+	UPROPERTY(Category = "Ship|Hull", EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UPaperSprite* ShipHullLowHP;
+
+	/** The Hull spritte when at no hitpoints */
+	UPROPERTY(Category = "Ship|Hull", EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UPaperSprite* ShipHullNoHP;
+
+	UPROPERTY(Category = "Ship|Rigging", VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UChildActorComponent* ShipRigging;
 
 	/** The rigging actor associated with the (optional sub-object). */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true", MetaClass = "UPaperFlipbook"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UPaperFlipbookComponent* ShipRipple;
 
 	/** The Camera. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* ShipCamera;
 
 	/** Component shown in the editor only to indicate character facing */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UArrowComponent* ShipForward;
 
 	class USpringArmComponent* SpringArm;
 
 protected:
-	// Called when the game starts or when spawned
+	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
-	// The rotation action
+	/** The rotation action */
 	void Turn(float AxisValue);
 
-	// The move forward action
+	/** The move forward action */
 	void MoveForward(float AxisValue);
 
-	// Called to bind functionality to input
+	/** Called to bind functionality to input */
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship", meta = (AllowPrivateAccess = "true"))
-	class UShipFloatingPawnMovement* ShipMovementComponent;
+	/** The Ships movement component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ship|Movement", meta = (AllowPrivateAccess = "true"))
+		class UShipFloatingPawnMovement* ShipMovementComponent;
 
 public:	
 
@@ -71,11 +92,24 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	/** Returns HullSprite subobject **/
-	FORCEINLINE class UPaperSpriteComponent * GetHullSprite() const { return HullSprite; }
+	class UPaperSpriteComponent * GetHullSprite() const { return HullSprite; }
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 	/** Returns ArrowComponent subobject **/
 	class UArrowComponent* GetShipForward() const { return ShipForward; }
 	
+	/** Impl for hitable */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Hitable")
+		void Hit();
+		virtual void Hit_Implementation() override;
+	
+	/** Impl for hitable */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Hitable")
+		int32 GetHP();
+		virtual int32  GetHP_Implementation() override;
+
+	UFUNCTION(BlueprintCallable)
+		void UpdateRigging();
+
 };
