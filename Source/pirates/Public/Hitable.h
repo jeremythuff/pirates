@@ -14,7 +14,7 @@ class UHitable : public UInterface
 };
 
 /**
- * 
+ * This interface indicates that this object will be targeted by cannons and can recieve damage.
  */
 class PIRATES_API IHitable
 {
@@ -27,7 +27,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hitable")
 		void Hit(); 
 
-	//classes using this interface must implement Hit
+	//classes using this interface must implement GetHP
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Hitable")
 		int32 GetHP(); 
 	
