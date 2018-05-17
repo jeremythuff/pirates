@@ -118,22 +118,20 @@ void AProceduralAnimatedTileMap::GenerateMap() {
 		{
 			FVector2D Tile = Entry.Key;
 
-			float Noise = Entry.Value;
-
 			PlaceTile(Tile.X, Tile.Y, OceanLayer->GetLayerIndex(), TEXT("water"));
 
-			if (Noise > ShallowsStart && Noise <= ShallowsStop) {
+			if (Entry.Value > ShallowsStart && Entry.Value <= ShallowsStop) {
 				FString TileName = SelectTileName(Tile, ShallowsStart, TEXT("shallows"));
 				PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), TileName);
 			}
-			else if (Noise > GrassStart) {
+			else if (Entry.Value > GrassStart) {
 				FString TileName = SelectTileName(Tile, GrassStart - 1.0f, TEXT("grass"));
 				PlaceTile(Tile.X, Tile.Y, GroundLayer->GetLayerIndex(), TileName);
 				FString STileName = SelectTileName(Tile, GrassStart - 1.0f, TEXT("grass"));
 				PlaceTile(Tile.X, Tile.Y, ShallowsLayer->GetLayerIndex(), STileName);
 			}
 
-			UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels and %f Noise"), Tile.X, Tile.Y, OceanLayer->GetLayerIndex(), TileSize, Noise);
+			UE_LOG(LogTemp, Warning, TEXT("Tile %dX %dY Layer %d, at %d pixels and %f Noise"), Tile.X, Tile.Y, OceanLayer->GetLayerIndex(), TileSize, Entry.Value);
 		}
 	}
 	else {
