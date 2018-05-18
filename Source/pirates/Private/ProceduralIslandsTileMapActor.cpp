@@ -44,7 +44,7 @@ void AProceduralIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEven
 // Initialize Islands Map
 void AProceduralIslandsTileMapActor::Init()
 {
-	if (BaseTileSet)
+	if (BaseTileSet && BaseTileMap->TileMap->TileLayers.Num() == 0)
 	{
 		BaseTileMap->MakeTileMapEditable();
 
