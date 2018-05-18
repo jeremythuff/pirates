@@ -21,7 +21,7 @@ ACommanderPawn::ACommanderPawn()
 	SpringArm->bEnableCameraLag = true;
 	SpringArm->bEnableCameraRotationLag = false;
 	SpringArm->bUsePawnControlRotation = false;
-	SpringArm->CameraLagSpeed = 1.0f;
+	SpringArm->CameraLagSpeed = 5.f;
 	SpringArm->bDoCollisionTest = false;
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->SetWorldRotation(FRotator(-90.0f, 0.0f, 0.0f));
@@ -67,14 +67,14 @@ void ACommanderPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ACommanderPawn::PanY(float AxisValue) {
 	if (CommanderMovementComponent && (CommanderMovementComponent->UpdatedComponent == RootComponent))
 	{
-		CommanderMovementComponent->AddInputVector(FVector(AxisValue * 1000, 0.0, 0.0));
+		CommanderMovementComponent->MoveNorthSouth(AxisValue);
 	}
 }
 
 void ACommanderPawn::PanX(float AxisValue) {
 	if (CommanderMovementComponent && (CommanderMovementComponent->UpdatedComponent == RootComponent))
 	{
-		CommanderMovementComponent->AddInputVector(FVector(0.0, AxisValue * 1000, 0.0));
+		CommanderMovementComponent->MoveEastWest(AxisValue);
 	}
 }
 

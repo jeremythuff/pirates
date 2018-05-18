@@ -15,7 +15,18 @@ class PIRATES_API UCommanderPawnMovement : public UFloatingPawnMovement
 	GENERATED_UCLASS_BODY()
 
 
+
 public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float MovementMultiplier = 1000.f;
+
+	UFUNCTION()
+		void MoveNorthSouth(float Axis);
+
+	UFUNCTION()
+		void MoveEastWest(float Axis);
+
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 	
 };

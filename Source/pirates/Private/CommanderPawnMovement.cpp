@@ -10,9 +10,6 @@
 UCommanderPawnMovement::UCommanderPawnMovement(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	MaxSpeed = 16000.f;
-	Acceleration = 5000.f;
-	Deceleration = 4000.f;
 }
 
 void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -33,36 +30,45 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 	{
 
 		
+
 		float MousePosX, MousePosY;
 		PlayerController->GetMousePosition(MousePosX, MousePosY);
 
-		const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+		FVector2D MousePosition;
+		FVector2D ViewportSize;
 
-		float ScreenEdgeBuffer = 25.0f;
-		// Screen Edge Movement
-		
-		if (MousePosX && MousePosX < 10.0f && MousePosX >= 0.0f) {
-			//left
-			UCommanderPawnMovement::AddInputVector(FVector(0.0f, -1000.f, 0.0f));
-		}
+		//Get mouse position and screen size
+		UGameViewportClient* gameViewport = GEngine->GameViewport;
 
-		if (MousePosX && MousePosX > (ViewportSize.X - ScreenEdgeBuffer) && MousePosX <= ViewportSize.X) {
-			//right
-			UCommanderPawnMovement::AddInputVector(FVector(0.0f, 1000.f, 0.0f));
-		}
-		
-		
-		
-		if (MousePosY && MousePosY < 10.0f && MousePosY >= 0.0f) {
-			//top
-			UCommanderPawnMovement::AddInputVector(FVector(1000.f, 0.0f, 0.0f));
-		}
+		//Make sure viewport exists
+		check(gameViewport);
+		gameViewport->GetViewportSize(ViewportSize);
 
-		if (MousePosY && MousePosY > (ViewportSize.Y - ScreenEdgeBuffer) && MousePosY <= ViewportSize.Y) {
-			//bottom
-			UCommanderPawnMovement::AddInputVector(FVector(-1000.f, 0.0f, 0.0f));
-		}
+		ConsumeInputVector();
 
+		if (gameViewport->IsFocused(gameViewport->Viewport) && gameViewport->GetMousePosition(MousePosition))
+		{
+
+			float ScreenEdgeBuffer = 25.0f;
+			// Screen Edge Movement
+
+			if (MousePosition.X < ScreenEdgeBuffer) {
+				//left
+				MoveEastWest(-1.f);
+			} else if (ViewportSize.X - MousePosition.X < ScreenEdgeBuffer) {
+				//right
+				MoveEastWest(1.f);
+			}
+
+			if (MousePosition.Y < ScreenEdgeBuffer) {
+				//top
+				MoveNorthSouth(1.f);
+			} else if (ViewportSize.Y - MousePosition.Y < ScreenEdgeBuffer) {
+				//bottom
+				MoveNorthSouth(-1.f);
+			}
+
+		}
 
 		bool IsPressed;
 		float TX, TY;
@@ -88,5 +94,48 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 		}
 
 	}
+
+}
+
+void UCommanderPawnMovement::MoveNorthSouth(float Direction)
+{
+
+	//Don't execute any further if the camera can't move
+	/*if (!bCanMoveCamera)
+		return;*/
+
+	//Calculate how much to move the camera by
+	float movementValue = Direction * MovementMultiplier;
+
+	//Create a delta vector that moves by the movementValue in the direction of the camera's yaw
+	FRotator IsolatedCameraYaw = FRotator(0.0f, UpdatedComponent->GetComponentRotation().Yaw, 0.0f);
+	FVector deltaMovement = movementValue * IsolatedCameraYaw.Vector();
+
+	//Add the delta to a new vector
+	FVector newLocation = UpdatedComponent->GetComponentLocation() + deltaMovement;
+
+	//Set the new location of the pawn
+	UpdatedComponent->SetWorldLocation(newLocation);
+
+}
+
+void UCommanderPawnMovement::MoveEastWest(float Direction)
+{
+	//Don't execute any further if the camera can't move
+	/*if (!bCanMoveCamera)
+		return;*/
+
+	//Calculate how much to move the camera by
+	float movementValue = Direction * MovementMultiplier;
+
+	//Create a delta vector that moves by the movementValue in the direction of the right of the camera's yaw
+	FRotator IsolatedCameraYaw = FRotator(0.0f, UpdatedComponent->GetComponentRotation().Yaw, 0.0f);
+	FVector deltaMovement = movementValue * (FRotator(0.0f, 90.0f, 0.0f) + IsolatedCameraYaw).Vector();
+
+	//Add the delta to a new vector
+	FVector newLocation = UpdatedComponent->GetComponentLocation() + deltaMovement;
+
+	//Set the new location of the pawn
+	UpdatedComponent->SetWorldLocation(newLocation);
 
 }
