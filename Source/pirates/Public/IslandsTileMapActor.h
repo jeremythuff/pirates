@@ -3,14 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PaperFlipbook.h"
+#include "PaperFlipbookComponent.h"
+#include "PaperTileMap.h"
+#include "PaperTileSet.h"
+#include "PaperTileMapComponent.h"
 #include "PaperTileMapComponent.h"
 #include "UObject/ObjectMacros.h"
 #include "GameFramework/Actor.h"
+#include "PiratesMap.h"
 
 #include "IslandsTileMapActor.generated.h"
 
 UCLASS()
-class PIRATES_API AIslandsTileMapActor : public AActor
+class PIRATES_API AIslandsTileMapActor : public AActor, public IPiratesMap
 {
 	GENERATED_BODY()
 
@@ -22,6 +28,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void PostInitProperties() override;
+
+  /** Impl for FindTileInfoAtWorldLoation from IPiratesMap */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "PiratesMap")
+		TMap<int32, FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
+		virtual TMap<int32, FPaperTileInfo> FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation) override;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;

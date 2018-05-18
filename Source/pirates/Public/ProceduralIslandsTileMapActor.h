@@ -9,7 +9,7 @@
 #include "PaperTileSet.h"
 #include "Perlin.h"
 #include "IslandsTileMapActor.h"
-
+#include "PiratesMap.h"
 #include "ProceduralIslandsTileMapActor.generated.h"
 
 typedef std::vector<float> Vector;
