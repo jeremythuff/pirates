@@ -8,19 +8,10 @@ AProceduralIslandsTileMapActor::AProceduralIslandsTileMapActor() : Super()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	if (BaseTileMap != NULL)
-	{
-		BaseTileMap->DestroyComponent();
-	}
-
-	BaseTileMap = CreateDefaultSubobject<UPaperTileMapComponent>(TEXT("Generated Tile Map Component"));
-	BaseTileMap->SetupAttachment(RootComponent);
-
 	UPaperTileMap *GeneratedMap = CreateDefaultSubobject<UPaperTileMap>(TEXT("Generated Tile Map"));
 	BaseTileMap->SetTileMap(GeneratedMap);
 	
 	BaseTileMap->MakeTileMapEditable();
-
 	BaseTileMap->TileMap->TileLayers.Empty();
 }
 
@@ -33,20 +24,24 @@ void AProceduralIslandsTileMapActor::Tick(float DeltaTime)
 void AProceduralIslandsTileMapActor::PostInitProperties()
 {
 	Super::PostInitProperties();
+	Init();
+	Generate();
 }
 
 #if WITH_EDITOR
 void AProceduralIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	Init();
 	Generate();
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 #endif
 
 // Initialize Islands Map
 void AProceduralIslandsTileMapActor::Init()
 {
+	BaseTileMap->MakeTileMapEditable();
+	BaseTileMap->TileMap->TileLayers.Empty();
+	
 	UPaperTileLayer *StructuresLayer = BaseTileMap->TileMap->AddNewLayer();
 	StructuresLayer->SetLayerCollides(true);
 	StructuresLayer->LayerName = FText::FromString("Structures");
