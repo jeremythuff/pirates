@@ -29,15 +29,14 @@ void AProceduralIslandsTileMapActor::Tick(float DeltaTime)
 void AProceduralIslandsTileMapActor::PostInitProperties()
 {
 	Super::PostInitProperties();
-	Init();
-	Generate();
 }
 
 #if WITH_EDITOR
 void AProceduralIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
 {
-	Generate();
 	Super::PostEditChangeProperty(PropertyChangedEvent);
+	Init();
+	Generate();
 }
 #endif
 
@@ -136,6 +135,8 @@ void AProceduralIslandsTileMapActor::Generate()
 void AProceduralIslandsTileMapActor::BeginPlay()
 {
 	Super::BeginPlay();
+	Init();
+	Generate();
 }
 
 void AProceduralIslandsTileMapActor::Resize()
