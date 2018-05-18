@@ -14,15 +14,7 @@ AIslandsTileMapActor::AIslandsTileMapActor()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	if (RootComponent != NULL)
-	{
-		RootComponent->DestroyComponent();
-	}
-
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-
 	BaseTileMap = CreateDefaultSubobject<UPaperTileMapComponent>(TEXT("BaseTileMap"));
-	BaseTileMap->SetupAttachment(RootComponent);
 }
 
 // Called every frame
