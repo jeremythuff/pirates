@@ -18,6 +18,10 @@ AProceduralIslandsTileMapActor::AProceduralIslandsTileMapActor() : Super()
 
 	UPaperTileMap *GeneratedMap = CreateDefaultSubobject<UPaperTileMap>(TEXT("Generated Tile Map"));
 	BaseTileMap->SetTileMap(GeneratedMap);
+	
+	BaseTileMap->MakeTileMapEditable();
+
+	BaseTileMap->TileMap->TileLayers.Empty();
 }
 
 // Called every frame
@@ -43,33 +47,28 @@ void AProceduralIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEven
 // Initialize Islands Map
 void AProceduralIslandsTileMapActor::Init()
 {
-	if (BaseTileSet && BaseTileMap->TileMap->TileLayers.Num() == 0)
-	{
-		BaseTileMap->MakeTileMapEditable();
+	UPaperTileLayer *StructuresLayer = BaseTileMap->TileMap->AddNewLayer();
+	StructuresLayer->SetLayerCollides(true);
+	StructuresLayer->LayerName = FText::FromString("Structures");
 
-		UPaperTileLayer *StructuresLayer = BaseTileMap->TileMap->AddNewLayer();
-		StructuresLayer->SetLayerCollides(true);
-		StructuresLayer->LayerName = FText::FromString("Structures");
+	UPaperTileLayer *FoliageLayer = BaseTileMap->TileMap->AddNewLayer();
+	FoliageLayer->SetLayerCollides(true);
+	FoliageLayer->LayerName = FText::FromString("Foliage");
 
-		UPaperTileLayer *FoliageLayer = BaseTileMap->TileMap->AddNewLayer();
-		FoliageLayer->SetLayerCollides(true);
-		FoliageLayer->LayerName = FText::FromString("Foliage");
+	UPaperTileLayer *LandLayer = BaseTileMap->TileMap->AddNewLayer();
+	LandLayer->SetLayerCollides(true);
+	LandLayer->LayerName = FText::FromString("Land");
 
-		UPaperTileLayer *LandLayer = BaseTileMap->TileMap->AddNewLayer();
-		LandLayer->SetLayerCollides(true);
-		LandLayer->LayerName = FText::FromString("Land");
+	UPaperTileLayer *ShallowsLayer = BaseTileMap->TileMap->AddNewLayer();
+	FLinearColor TransparentColor = FLinearColor(ShallowsLayer->GetLayerColor());
+	TransparentColor.A = 0.9f;
+	ShallowsLayer->SetLayerColor(TransparentColor);
+	ShallowsLayer->SetLayerCollides(false);
+	ShallowsLayer->LayerName = FText::FromString("Shallows");
 
-		UPaperTileLayer *ShallowsLayer = BaseTileMap->TileMap->AddNewLayer();
-		FLinearColor TransparentColor = FLinearColor(ShallowsLayer->GetLayerColor());
-		TransparentColor.A = 0.9f;
-		ShallowsLayer->SetLayerColor(TransparentColor);
-		ShallowsLayer->SetLayerCollides(false);
-		ShallowsLayer->LayerName = FText::FromString("Shallows");
-
-		UPaperTileLayer *OceanLayer = BaseTileMap->TileMap->AddNewLayer();
-		OceanLayer->SetLayerCollides(false);
-		OceanLayer->LayerName = FText::FromString("Ocean");
-	}
+	UPaperTileLayer *OceanLayer = BaseTileMap->TileMap->AddNewLayer();
+	OceanLayer->SetLayerCollides(false);
+	OceanLayer->LayerName = FText::FromString("Ocean");
 }
 
 // Generate Islands Map
