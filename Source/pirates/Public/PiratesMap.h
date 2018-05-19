@@ -7,6 +7,7 @@
 
 #include "PaperTileMap.h"
 #include "PaperTileSet.h"
+#include "PaperTileLayer.h"
 
 #include "PiratesMap.generated.h"
 
@@ -18,7 +19,7 @@ class UPiratesMap : public UInterface
 };
 
 /**
- * 
+ * The common interface shared by all map implementations.
  */
 class PIRATES_API IPiratesMap
 {
@@ -28,7 +29,7 @@ class PIRATES_API IPiratesMap
 public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="PiratesMap")
-	  TMap<int32, FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
+		TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
 
 
 };

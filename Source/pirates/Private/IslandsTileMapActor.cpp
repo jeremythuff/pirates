@@ -6,6 +6,7 @@
 #include "PaperFlipbookComponent.h"
 #include "PaperTileMap.h"
 #include "PaperTileSet.h"
+#include "PaperTileLayer.h"
 #include "PaperTileMapComponent.h"
 
 // Sets default values
@@ -35,14 +36,15 @@ void AIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEvent &Propert
 }
 #endif
 
-TMap<int32, FPaperTileInfo> AIslandsTileMapActor::FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation) {
 
-	TMap<int32, FPaperTileInfo> TilesAtLocation;
-	
+TArray<FPaperTileInfo> AIslandsTileMapActor::FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation)
+{
+	TArray<FPaperTileInfo> TilesAtLocation;
+
 	UPaperTileMap* TileMap = BaseTileMap->TileMap;
 	int32 MapHeight = TileMap->MapHeight;
 	int32 MapWidth = TileMap->MapWidth;
-	
+
 	TArray<UPaperTileLayer*> Layers = TileMap->TileLayers;
 
 	for (auto LayerItr(Layers.CreateIterator()); LayerItr; LayerItr++)
@@ -55,19 +57,18 @@ TMap<int32, FPaperTileInfo> AIslandsTileMapActor::FindTileInfoAtWorldLoation_Imp
 			for (int32 TileY = 0; TileY < MapWidth; TileY++) {
 
 				FVector CenterOfTile = BaseTileMap->GetTileCenterPosition(TileX, TileY, LayerIndex, true);
-				
-				if(FVector::DistXY(CenterOfTile, WorldLocation) < TileMap->TileWidth / 2 ) {
+
+				if (FVector::DistXY(CenterOfTile, WorldLocation) < TileMap->TileWidth / 2) {
 					FPaperTileInfo TileInfo = BaseTileMap->GetTile(TileX, TileY, LayerIndex);
-					if(TileInfo.IsValid()) {
-						TilesAtLocation.Add(LayerIndex, TileInfo);
+					if (TileInfo.IsValid()) {
+						TilesAtLocation.Insert(TileInfo, LayerIndex);
 					}
 				}
 			}
 		}
 	}
- 
-  return TilesAtLocation;
 
+	return TilesAtLocation;
 }
 
 // Called when the game starts or when spawned

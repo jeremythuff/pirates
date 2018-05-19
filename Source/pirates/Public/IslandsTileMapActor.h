@@ -8,7 +8,7 @@
 #include "PaperTileMap.h"
 #include "PaperTileSet.h"
 #include "PaperTileMapComponent.h"
-#include "PaperTileMapComponent.h"
+#include "PaperTileLayer.h"
 #include "UObject/ObjectMacros.h"
 #include "GameFramework/Actor.h"
 #include "PiratesMap.h"
@@ -30,9 +30,9 @@ public:
 	virtual void PostInitProperties() override;
 
   /** Impl for FindTileInfoAtWorldLoation from IPiratesMap */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "PiratesMap")
-		TMap<int32, FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
-		virtual TMap<int32, FPaperTileInfo> FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation) override;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PiratesMap")
+		TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
+		virtual TArray<FPaperTileInfo> FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation) override;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;
