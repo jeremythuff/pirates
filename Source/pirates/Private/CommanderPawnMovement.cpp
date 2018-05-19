@@ -87,6 +87,9 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 				if (CastedShipPawn) {
 					PlayerController->Possess(CastedShipPawn);
 				}
+
+
+
 			}
 			else {
 				UE_LOG(LogTemp, Warning, TEXT("Actor: not valid"));
