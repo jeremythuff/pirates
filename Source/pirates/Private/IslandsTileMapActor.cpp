@@ -53,15 +53,15 @@ TArray<FPaperTileInfo> AIslandsTileMapActor::FindTileInfoAtWorldLoation_Implemen
 		if (!(*LayerItr)->IsValidLowLevel()) continue;
 
 		for (int32 TileX = 0; TileX < MapHeight; TileX++) {
-
+		
 			for (int32 TileY = 0; TileY < MapWidth; TileY++) {
-
+				
 				FVector CenterOfTile = BaseTileMap->GetTileCenterPosition(TileX, TileY, LayerIndex, true);
 
 				if (FVector::DistXY(CenterOfTile, WorldLocation) < TileMap->TileWidth / 2) {
 					FPaperTileInfo TileInfo = BaseTileMap->GetTile(TileX, TileY, LayerIndex);
 					if (TileInfo.IsValid()) {
-						TilesAtLocation.Insert(TileInfo, LayerIndex);
+						TilesAtLocation.Add(FPaperTileInfo(TileInfo));
 					}
 				}
 			}

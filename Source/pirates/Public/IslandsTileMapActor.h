@@ -30,7 +30,7 @@ public:
 	virtual void PostInitProperties() override;
 
   /** Impl for FindTileInfoAtWorldLoation from IPiratesMap */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PiratesMap")
+	UFUNCTION(BlueprintNativeEvent, BlueprintNativeEvent, Category = "PiratesMap")
 		TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
 		virtual TArray<FPaperTileInfo> FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation) override;
 
