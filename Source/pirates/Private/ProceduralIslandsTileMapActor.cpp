@@ -8,11 +8,9 @@ AProceduralIslandsTileMapActor::AProceduralIslandsTileMapActor() : Super()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	UPaperTileMap *GeneratedMap = CreateDefaultSubobject<UPaperTileMap>(TEXT("Generated Tile Map"));
+	GeneratedMap = CreateDefaultSubobject<UPaperTileMap>(TEXT("Generated Tile Map"));
 	BaseTileMap->SetTileMap(GeneratedMap);
 	
-	BaseTileMap->MakeTileMapEditable();
-	BaseTileMap->TileMap->TileLayers.Empty();
 }
 
 // Called every frame
@@ -39,31 +37,39 @@ void AProceduralIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEven
 // Initialize Islands Map
 void AProceduralIslandsTileMapActor::Init()
 {
-	BaseTileMap->MakeTileMapEditable();
-	BaseTileMap->TileMap->TileLayers.Empty();
-	
-	UPaperTileLayer *StructuresLayer = BaseTileMap->TileMap->AddNewLayer();
-	StructuresLayer->SetLayerCollides(true);
-	StructuresLayer->LayerName = FText::FromString("Structures");
+	#if WITH_EDITOR
+	if (!Initialized) {
+		Initialized = true;
+	#endif
+		BaseTileMap->MakeTileMapEditable();
+		BaseTileMap->TileMap->TileLayers.Empty();
 
-	UPaperTileLayer *FoliageLayer = BaseTileMap->TileMap->AddNewLayer();
-	FoliageLayer->SetLayerCollides(true);
-	FoliageLayer->LayerName = FText::FromString("Foliage");
+		UPaperTileLayer *StructuresLayer = BaseTileMap->TileMap->AddNewLayer();
+		StructuresLayer->SetLayerCollides(true);
+		StructuresLayer->LayerName = FText::FromString("Structures");
 
-	UPaperTileLayer *LandLayer = BaseTileMap->TileMap->AddNewLayer();
-	LandLayer->SetLayerCollides(true);
-	LandLayer->LayerName = FText::FromString("Land");
+		UPaperTileLayer *FoliageLayer = BaseTileMap->TileMap->AddNewLayer();
+		FoliageLayer->SetLayerCollides(true);
+		FoliageLayer->LayerName = FText::FromString("Foliage");
 
-	UPaperTileLayer *ShallowsLayer = BaseTileMap->TileMap->AddNewLayer();
-	FLinearColor TransparentColor = FLinearColor(ShallowsLayer->GetLayerColor());
-	TransparentColor.A = 0.9f;
-	ShallowsLayer->SetLayerColor(TransparentColor);
-	ShallowsLayer->SetLayerCollides(false);
-	ShallowsLayer->LayerName = FText::FromString("Shallows");
+		UPaperTileLayer *LandLayer = BaseTileMap->TileMap->AddNewLayer();
+		LandLayer->SetLayerCollides(true);
+		LandLayer->LayerName = FText::FromString("Land");
 
-	UPaperTileLayer *OceanLayer = BaseTileMap->TileMap->AddNewLayer();
-	OceanLayer->SetLayerCollides(false);
-	OceanLayer->LayerName = FText::FromString("Ocean");
+		UPaperTileLayer *ShallowsLayer = BaseTileMap->TileMap->AddNewLayer();
+		FLinearColor TransparentColor = FLinearColor(ShallowsLayer->GetLayerColor());
+		TransparentColor.A = 0.9f;
+		ShallowsLayer->SetLayerColor(TransparentColor);
+		ShallowsLayer->SetLayerCollides(false);
+		ShallowsLayer->LayerName = FText::FromString("Shallows");
+
+		UPaperTileLayer *OceanLayer = BaseTileMap->TileMap->AddNewLayer();
+		OceanLayer->SetLayerCollides(false);
+		OceanLayer->LayerName = FText::FromString("Ocean");
+
+	#if WITH_EDITOR
+	}
+	#endif
 }
 
 // Generate Islands Map
@@ -71,6 +77,11 @@ void AProceduralIslandsTileMapActor::Generate()
 {
 	if (BaseTileSet)
 	{
+
+		if (!BaseTileMap->TileMap) {
+			BaseTileMap->SetTileMap(GeneratedMap);
+		}
+			
 		std::srand(Seed);
 		Resize();
 
@@ -129,8 +140,6 @@ void AProceduralIslandsTileMapActor::Generate()
 void AProceduralIslandsTileMapActor::BeginPlay()
 {
 	Super::BeginPlay();
-	Init();
-	Generate();
 }
 
 void AProceduralIslandsTileMapActor::Resize()
@@ -142,6 +151,7 @@ void AProceduralIslandsTileMapActor::Resize()
 
 	BaseTileMap->TileMap->TileWidth = BaseTileSet->GetTileSize().X;
 	BaseTileMap->TileMap->TileHeight = BaseTileSet->GetTileSize().Y;
+	
 }
 
 Matrix AProceduralIslandsTileMapActor::GenerateNoise(int seed)

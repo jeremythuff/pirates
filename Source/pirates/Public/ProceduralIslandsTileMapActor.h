@@ -33,6 +33,7 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;
 #endif
 
+
 	void Init();
 
 	void Generate();
@@ -83,6 +84,14 @@ protected:
 	// TODO: remove when complete
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 	TMap<FString, FString> Edges = InitialEdges();
+
+	UPROPERTY(Transient, VisibleInstanceOnly, meta = (AllowPrivateAccess = "true"))
+	UPaperTileMap * GeneratedMap;
+
+	#if WITH_EDITOR
+		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation")
+		bool Initialized = false;
+	#endif
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
