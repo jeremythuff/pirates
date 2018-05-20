@@ -39,6 +39,17 @@ protected:
 	/** The pan x action */
 	void PanX(float AxisValue);
 
+	/** Fires when the primary selection action has begun */
+	void OnBeginPrimarySelect();
+
+	/** Fires when the primary selection action has ended */
+	void OnEndPrimarySelect();
+
+	/** Fires when the secondary selection action has begun */
+	void OnBeginSecondarySelect();
+
+	/** Fires when the secondary selection action has ended */
+	void OnEndSecondarySelect();
 
 public:	
 	// Called every frame

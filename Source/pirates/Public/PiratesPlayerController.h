@@ -18,4 +18,13 @@ class PIRATES_API APiratesPlayerController : public APlayerController
 	
 	APiratesPlayerController();
 
+public:
+
+	UPROPERTY()
+	AActor* SelectedActor;
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 };

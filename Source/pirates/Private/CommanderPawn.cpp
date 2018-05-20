@@ -1,9 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CommanderPawn.h"
+
+#include "Engine.h"
 #include "Components/DrawSphereComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "PiratesPlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "PiratesMap.h"
+#include "ShipPawn.h"
 #include "CommanderPawnMovement.h"
 #include "Components/InputComponent.h"
 
@@ -44,7 +49,7 @@ ACommanderPawn::ACommanderPawn()
 void ACommanderPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	GEngine->GameViewport->Viewport->LockMouseToViewport(true);
 }
 
 // Called every frame
@@ -62,20 +67,80 @@ void ACommanderPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("PanY", this, &ACommanderPawn::PanY);
 	PlayerInputComponent->BindAxis("PanX", this, &ACommanderPawn::PanX);
 
+	PlayerInputComponent->BindAction("PrimarySelect", IE_Pressed, this, &ACommanderPawn::OnBeginPrimarySelect);
+	PlayerInputComponent->BindAction("PrimarySelect", IE_Released, this, &ACommanderPawn::OnEndPrimarySelect);
+
+	PlayerInputComponent->BindAction("SecondarySelect", IE_Pressed, this, &ACommanderPawn::OnBeginSecondarySelect);
+	PlayerInputComponent->BindAction("SecondarySelect", IE_Released, this, &ACommanderPawn::OnEndSecondarySelect);
+
 }
 
 void ACommanderPawn::PanY(float AxisValue) {
-	if (CommanderMovementComponent && (CommanderMovementComponent->UpdatedComponent == RootComponent))
-	{
+	if (CommanderMovementComponent && (CommanderMovementComponent->UpdatedComponent == RootComponent)) {
 		CommanderMovementComponent->MoveNorthSouth(AxisValue);
 	}
 }
 
 void ACommanderPawn::PanX(float AxisValue) {
-	if (CommanderMovementComponent && (CommanderMovementComponent->UpdatedComponent == RootComponent))
-	{
+	if (CommanderMovementComponent && (CommanderMovementComponent->UpdatedComponent == RootComponent)) {
 		CommanderMovementComponent->MoveEastWest(AxisValue);
 	}
+}
+
+void ACommanderPawn::OnBeginPrimarySelect() {
+	UE_LOG(LogTemp, Warning, TEXT("Click Left Down"));
+
+	APiratesPlayerController* PlayerController = Cast<APiratesPlayerController>(ACommanderPawn::GetController());
+
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery1, false, HitResult);
+
+	if (HitResult.IsValidBlockingHit()) {
+		UE_LOG(LogTemp, Warning, TEXT("Actor: %s"), *HitResult.Actor->GetName());
+
+		AShipPawn* CastedShipPawn = Cast<AShipPawn>(HitResult.Actor);
+		if (CastedShipPawn) {
+			//PlayerController->SelectedActor = CastedShipPawn;
+			PlayerController->Possess(CastedShipPawn);
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("Actor: not valid"));
+	}
+}
+
+void ACommanderPawn::OnEndPrimarySelect() {
+	UE_LOG(LogTemp, Warning, TEXT("Click Left Up"));
+}
+
+void ACommanderPawn::OnBeginSecondarySelect() {
+
+	UE_LOG(LogTemp, Warning, TEXT("Click Right Down"));
+
+	APiratesPlayerController* PlayerController = Cast<APiratesPlayerController>(ACommanderPawn::GetController());
+
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery1, false, HitResult);
+
+	if (HitResult.IsValidBlockingHit()) {
+		UE_LOG(LogTemp, Warning, TEXT("Actor: %s"), *HitResult.Actor->GetName());
+
+		IPiratesMap* CastedPiratesMap = Cast<IPiratesMap>(HitResult.Actor);
+		if (CastedPiratesMap)
+		{
+			CommanderMovementComponent->StartDrag();
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("Actor: not valid"));
+	}
+
+}
+
+void ACommanderPawn::OnEndSecondarySelect() {
+	UE_LOG(LogTemp, Warning, TEXT("Click Right Up"));
+
+	CommanderMovementComponent->StopDrag();
 }
 
 

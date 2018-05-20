@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "PiratesPlayerController.h"
 #include "GameFramework/Pawn.h"
-#include "ShipPawn.h"
+
 
 UCommanderPawnMovement::UCommanderPawnMovement(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -29,8 +29,6 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 	if (PlayerController && PlayerController->IsLocalController())
 	{
 
-		
-
 		float MousePosX, MousePosY;
 		PlayerController->GetMousePosition(MousePosX, MousePosY);
 
@@ -50,9 +48,17 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 		{
 
 			float ScreenEdgeBuffer = 25.0f;
-			// Screen Edge Movement
+			// Screen Edge Movement and Drag
 
-			if (MousePosition.X < ScreenEdgeBuffer) {
+			if (Dragging) {
+
+				UE_LOG(LogTemp, Warning, TEXT("Dragging"));
+
+				FVector2D DeltaVector = DragOrigin - MousePosition;
+
+				UpdatedComponent->AddLocalOffset(FVector(DeltaVector.Y, DeltaVector.X, 0.f));
+
+			} else if (MousePosition.X < ScreenEdgeBuffer) {
 				//left
 				MoveEastWest(-1.f);
 			} else if (ViewportSize.X - MousePosition.X < ScreenEdgeBuffer) {
@@ -68,32 +74,6 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 				MoveNorthSouth(-1.f);
 			}
 
-		}
-
-		bool IsPressed;
-		float TX, TY;
-		PlayerController->GetInputTouchState(ETouchIndex::Touch1, TX, TY, IsPressed);
-		
-		if (IsPressed) {
-
-			FHitResult HitResult;
-			PlayerController->GetHitResultUnderFingerByChannel(ETouchIndex::Touch1, ETraceTypeQuery::TraceTypeQuery1, false, HitResult);
-			//PlayerController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery1, false, HitResult);
-
-			if (HitResult.IsValidBlockingHit()) {
-				UE_LOG(LogTemp, Warning, TEXT("Actor: %s"), *HitResult.Actor->GetName());
-
-				AShipPawn* CastedShipPawn = Cast<AShipPawn>(HitResult.Actor);
-				if (CastedShipPawn) {
-					PlayerController->Possess(CastedShipPawn);
-				}
-
-
-
-			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("Actor: not valid"));
-			}
 		}
 
 	}
@@ -142,3 +122,18 @@ void UCommanderPawnMovement::MoveEastWest(float Direction)
 	UpdatedComponent->SetWorldLocation(newLocation);
 
 }
+
+void UCommanderPawnMovement::StartDrag() 
+{
+	UGameViewportClient* gameViewport = GEngine->GameViewport;
+	check(gameViewport);
+
+	gameViewport->GetMousePosition(DragOrigin);
+	Dragging = true;
+}
+
+void UCommanderPawnMovement::StopDrag()
+{
+	Dragging = false;
+}
+

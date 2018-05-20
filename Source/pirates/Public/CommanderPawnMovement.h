@@ -15,6 +15,11 @@ class PIRATES_API UCommanderPawnMovement : public UFloatingPawnMovement
 	GENERATED_UCLASS_BODY()
 
 
+private:
+
+	bool Dragging = false;
+
+	FVector2D DragOrigin;
 
 public:
 
@@ -26,6 +31,12 @@ public:
 
 	UFUNCTION()
 		void MoveEastWest(float Axis);
+
+	UFUNCTION()
+		void StartDrag();
+
+	UFUNCTION()
+		void StopDrag();
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 	

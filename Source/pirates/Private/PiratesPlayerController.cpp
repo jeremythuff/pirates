@@ -2,8 +2,6 @@
 
 #include "PiratesPlayerController.h"
 
-
-
 //Constructor
 APiratesPlayerController::APiratesPlayerController()
 	:
@@ -12,5 +10,14 @@ APiratesPlayerController::APiratesPlayerController()
 	APiratesPlayerController::bShowMouseCursor = true;
 	APiratesPlayerController::bEnableClickEvents = true;
 	APiratesPlayerController::bEnableMouseOverEvents = true;
+
+}
+
+void APiratesPlayerController::BeginPlay() {
+
+	FInputModeGameAndUI inputMode;
+	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+	APiratesPlayerController::SetInputMode(inputMode);
+
 }
 
