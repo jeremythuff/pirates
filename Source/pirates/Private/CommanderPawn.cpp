@@ -100,8 +100,14 @@ void ACommanderPawn::OnBeginPrimarySelect() {
 
 		AShipPawn* CastedShipPawn = Cast<AShipPawn>(HitResult.Actor);
 		if (CastedShipPawn) {
-			//PlayerController->SelectedActor = CastedShipPawn;
-			PlayerController->Possess(CastedShipPawn);
+			float hp = CastedShipPawn->GetHP();
+			if (hp > 0.f) {
+				PlayerController->SelectedActor = CastedShipPawn;
+				PlayerController->PreviouslySelectedActor = this;
+				PlayerController->Possess(CastedShipPawn);
+			} {
+				UE_LOG(LogTemp, Warning, TEXT("Ship cannot by possesed when it is destroyed."));
+			}
 		}
 	}
 	else {

@@ -21,7 +21,10 @@ class PIRATES_API APiratesPlayerController : public APlayerController
 public:
 
 	UPROPERTY()
-	AActor* SelectedActor;
+	APawn* SelectedActor;
+
+	UPROPERTY()
+	APawn* PreviouslySelectedActor;
 
 protected:
 	// Called when the game starts or when spawned
