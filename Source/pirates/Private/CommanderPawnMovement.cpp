@@ -48,37 +48,14 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 			// Screen Edge Movement and Drag
 
 			if (Dragging) {
-
-				/*FVector MousePositionWS, MouseDirectionWS;
-				PlayerController->DeprojectMousePositionToWorld(MousePositionWS, MouseDirectionWS);
-				
-				MousePositionWS.Z = 0.f;*/
-
-				FVector NewMousePos = FVector(MousePosition.Y, MousePosition.X, 0.f);
-
-				FVector DeltaVector = DragOrigin - NewMousePos;
-
-				if (DeltaVector.IsNearlyZero() == false) {
-
-					UE_LOG(LogTemp, Warning, TEXT("Dragging Delta: %s"), *DeltaVector.ToCompactString());
-
-					FVector CurrentCamera = UpdatedComponent->GetComponentLocation();
-					CurrentCamera += DeltaVector;
-					UpdatedComponent->SetWorldLocation(CurrentCamera);
-
-					DragOrigin = NewMousePos;
-
-				}
-
+				Drag();
 			} else if (MousePosition.X < ScreenEdgeBuffer) {
 				//left
 				MoveEastWest(-1.f);
 			} else if (ViewportSize.X - MousePosition.X < ScreenEdgeBuffer) {
 				//right
 				MoveEastWest(1.f);
-			}
-
-			if (MousePosition.Y < ScreenEdgeBuffer) {
+			} else if (MousePosition.Y < ScreenEdgeBuffer) {
 				//top
 				MoveNorthSouth(1.f);
 			} else if (ViewportSize.Y - MousePosition.Y < ScreenEdgeBuffer) {
@@ -90,6 +67,24 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 
 	}
 
+}
+
+void UCommanderPawnMovement::Drag() 
+{
+	float MouseX, MouseY;
+	APiratesPlayerController* PlayerController = Cast<APiratesPlayerController>(PawnOwner->GetController());
+	PlayerController->GetMousePosition(MouseX, MouseY);
+	FVector NewMousePosition = FVector(-MouseY, MouseX, 0.f);
+
+	FVector DeltaVector = (DragOrigin - NewMousePosition) * MovementMultiplier * 0.05f;
+
+	if (DeltaVector.IsNearlyZero() == false) {
+		FVector CurrentCamera = UpdatedComponent->GetComponentLocation();
+		CurrentCamera += DeltaVector;
+		UpdatedComponent->SetWorldLocation(CurrentCamera);
+
+		DragOrigin = NewMousePosition;
+	}
 }
 
 void UCommanderPawnMovement::MoveNorthSouth(float Direction)
@@ -140,12 +135,7 @@ void UCommanderPawnMovement::StartDrag()
 	float MouseX, MouseY;
 	APiratesPlayerController* PlayerController = Cast<APiratesPlayerController>(PawnOwner->GetController());
 	PlayerController->GetMousePosition(MouseX, MouseY);
-	FVector MousePosition = FVector(MouseX, MouseY, 0.f);
-
-	DragOrigin = MousePosition;
-
-	UE_LOG(LogTemp, Warning, TEXT("DragOrigin: %s"), *DragOrigin.ToCompactString())
-
+	DragOrigin = FVector(-MouseY, MouseX, 0.f);
 	Dragging = true;
 }
 

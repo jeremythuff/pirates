@@ -64,7 +64,7 @@ void AProceduralIslandsTileMapActor::Init()
 		ShallowsLayer->LayerName = FText::FromString("Shallows");
 
 		UPaperTileLayer *OceanLayer = BaseTileMap->TileMap->AddNewLayer();
-		OceanLayer->SetLayerCollides(false);
+		OceanLayer->SetLayerCollides(true);
 		OceanLayer->LayerName = FText::FromString("Ocean");
 
 	#if WITH_EDITOR

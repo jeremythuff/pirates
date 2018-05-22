@@ -33,6 +33,9 @@ public:
 		void MoveEastWest(float Axis);
 
 	UFUNCTION()
+		void Drag();
+
+	UFUNCTION()
 		void StartDrag();
 
 	UFUNCTION()

@@ -17,6 +17,7 @@ void APiratesPlayerController::BeginPlay() {
 
 	FInputModeGameAndUI inputMode;
 	inputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+	inputMode.SetHideCursorDuringCapture(false);
 	APiratesPlayerController::SetInputMode(inputMode);
 
 }
