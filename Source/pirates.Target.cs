@@ -8,7 +8,7 @@ public class piratesTarget : TargetRules
 	public piratesTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-
-		ExtraModuleNames.AddRange( new string[] { "pirates" } );
+        bUsesSteam = true;
+        ExtraModuleNames.AddRange( new string[] { "pirates" } );
 	}
 }

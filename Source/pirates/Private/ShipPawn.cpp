@@ -9,6 +9,7 @@
 #include "Components/InputComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ShipFloatingPawnMovement.h"
+#include "PiratesPlayerController.h"
 #include "RiggingActor.h"
 
 FName AShipPawn::HullSpriteComponentName(TEXT("HullSprite"));
@@ -122,7 +123,12 @@ void AShipPawn::UpdateRigging()
 			NewMainMastSprite = ShipRiggingChildActor->MainMastSpriteNoHP;
 			NewForeMastSprite = ShipRiggingChildActor->ForeMastSpriteNoHP;
 		}
-		// End Game
+		
+		APiratesPlayerController* PlayerController = Cast<APiratesPlayerController>(AShipPawn::GetController());
+		if (PlayerController && PlayerController->IsLocalController()) {
+			PlayerController->Possess(PlayerController->PreviouslySelectedActor);
+		}
+
 	}
 
 

@@ -2,4 +2,6 @@
 
 #pragma once
 
+#include "Engine/Engine.h"
 #include "CoreMinimal.h"
+#include "UnrealNetwork.h"

@@ -186,7 +186,6 @@ TMap<int32, FPaperTileInfo> AAnimatedTileMap::FindTileInfoAtWorldLoation(FVector
 				}
 			}
 		}
-
 	}
 
 	return TilesAtLocation;
