@@ -89,7 +89,6 @@ protected:
 	UPaperTileMap * GeneratedMap;
 
 	#if WITH_EDITOR
-		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation")
 		bool Initialized = false;
 	#endif
 

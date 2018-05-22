@@ -19,7 +19,7 @@ private:
 
 	bool Dragging = false;
 
-	FVector2D DragOrigin;
+	FVector DragOrigin;
 
 public:
 

@@ -29,9 +29,6 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 	if (PlayerController && PlayerController->IsLocalController())
 	{
 
-		float MousePosX, MousePosY;
-		PlayerController->GetMousePosition(MousePosX, MousePosY);
-
 		FVector2D MousePosition;
 		FVector2D ViewportSize;
 
@@ -52,11 +49,26 @@ void UCommanderPawnMovement::TickComponent(float DeltaTime, enum ELevelTick Tick
 
 			if (Dragging) {
 
-				UE_LOG(LogTemp, Warning, TEXT("Dragging"));
+				/*FVector MousePositionWS, MouseDirectionWS;
+				PlayerController->DeprojectMousePositionToWorld(MousePositionWS, MouseDirectionWS);
+				
+				MousePositionWS.Z = 0.f;*/
 
-				FVector2D DeltaVector = DragOrigin - MousePosition;
+				FVector NewMousePos = FVector(MousePosition.Y, MousePosition.X, 0.f);
 
-				UpdatedComponent->AddLocalOffset(FVector(DeltaVector.Y, DeltaVector.X, 0.f));
+				FVector DeltaVector = DragOrigin - NewMousePos;
+
+				if (DeltaVector.IsNearlyZero() == false) {
+
+					UE_LOG(LogTemp, Warning, TEXT("Dragging Delta: %s"), *DeltaVector.ToCompactString());
+
+					FVector CurrentCamera = UpdatedComponent->GetComponentLocation();
+					CurrentCamera += DeltaVector;
+					UpdatedComponent->SetWorldLocation(CurrentCamera);
+
+					DragOrigin = NewMousePos;
+
+				}
 
 			} else if (MousePosition.X < ScreenEdgeBuffer) {
 				//left
@@ -125,10 +137,15 @@ void UCommanderPawnMovement::MoveEastWest(float Direction)
 
 void UCommanderPawnMovement::StartDrag() 
 {
-	UGameViewportClient* gameViewport = GEngine->GameViewport;
-	check(gameViewport);
+	float MouseX, MouseY;
+	APiratesPlayerController* PlayerController = Cast<APiratesPlayerController>(PawnOwner->GetController());
+	PlayerController->GetMousePosition(MouseX, MouseY);
+	FVector MousePosition = FVector(MouseX, MouseY, 0.f);
 
-	gameViewport->GetMousePosition(DragOrigin);
+	DragOrigin = MousePosition;
+
+	UE_LOG(LogTemp, Warning, TEXT("DragOrigin: %s"), *DragOrigin.ToCompactString())
+
 	Dragging = true;
 }
 
