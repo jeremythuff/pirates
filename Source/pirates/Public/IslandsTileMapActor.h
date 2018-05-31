@@ -33,11 +33,10 @@ public:
 	TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
 	virtual TArray<FPaperTileInfo> FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation) override;
 
-private:
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map", meta = (AllowPrivateAccess = "true"))
 	class UPaperTileMapComponent *TileMapComponent;
 
-protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -46,6 +45,4 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void PostRegisterAllComponents() override;
-
-	FORCEINLINE class UPaperTileMapComponent *GetTileMapComponent() const { return TileMapComponent; }
 };

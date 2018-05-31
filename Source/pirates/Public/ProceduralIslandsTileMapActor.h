@@ -5,8 +5,6 @@
 #include <vector>
 
 #include "CoreMinimal.h"
-#include "PaperTileMap.h"
-#include "PaperTileSet.h"
 #include "Perlin.h"
 #include "IslandsTileMapActor.h"
 
@@ -75,6 +73,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 	int32 WaterTileIndex = 104;
 
+	/** The likelyhood of a shallow rock. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "1"))
+	float ShallowsRockLikelyhood = 0.05f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+	TArray<int32> ShallowsRockTileIndeces = InitialShallowsRockTileIndeces();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+	TArray<int32> GrassTileIndeces = InitialGrassTileIndices();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+	TArray<int32> FoilageTileIndeces = InitialFoliageTileIndices();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 	TMap<FString, FString> ShallowsEdgeMap = InitialShallowsEdgeMap();
 
@@ -107,6 +118,55 @@ private:
 	Matrix CopyNoise(Matrix Noise);
 
 	void AddTile(int32 C, int32 Y, int32 LayerIndex, int32 TileIndex);
+
+	FORCEINLINE TArray<int32> InitialShallowsRockTileIndeces()
+	{
+		TArray<int32> InitialShallowsRockTileIndeces;
+		InitialShallowsRockTileIndeces.Add(48);
+		InitialShallowsRockTileIndeces.Add(49);
+		InitialShallowsRockTileIndeces.Add(50);
+		InitialShallowsRockTileIndeces.Add(64);
+		InitialShallowsRockTileIndeces.Add(65);
+		InitialShallowsRockTileIndeces.Add(66);
+		return InitialShallowsRockTileIndeces;
+	}
+
+	FORCEINLINE TArray<int32> InitialGrassTileIndices()
+	{
+		TArray<int32> InitialGrassTileIndices;
+		InitialGrassTileIndices.Add(22);
+		InitialGrassTileIndices.Add(22);
+		InitialGrassTileIndices.Add(22);
+		InitialGrassTileIndices.Add(22);
+		InitialGrassTileIndices.Add(23);
+		InitialGrassTileIndices.Add(23);
+		InitialGrassTileIndices.Add(23);
+		InitialGrassTileIndices.Add(23);
+		InitialGrassTileIndices.Add(23);
+		InitialGrassTileIndices.Add(23);
+		InitialGrassTileIndices.Add(38);
+		InitialGrassTileIndices.Add(39);
+		return InitialGrassTileIndices;
+	}
+
+	FORCEINLINE TArray<int32> InitialFoliageTileIndices()
+	{
+		TArray<int32> IntialFoliageTileIndices;
+		IntialFoliageTileIndices.Add(69);
+		IntialFoliageTileIndices.Add(69);
+		IntialFoliageTileIndices.Add(69);
+		IntialFoliageTileIndices.Add(69);
+		IntialFoliageTileIndices.Add(69);
+		IntialFoliageTileIndices.Add(70);
+		IntialFoliageTileIndices.Add(70);
+		IntialFoliageTileIndices.Add(70);
+		IntialFoliageTileIndices.Add(70);
+		IntialFoliageTileIndices.Add(70);
+		IntialFoliageTileIndices.Add(71);
+		IntialFoliageTileIndices.Add(86);
+		IntialFoliageTileIndices.Add(87);
+		return IntialFoliageTileIndices;
+	}
 
 	FORCEINLINE TMap<FString, FString> InitialEdges()
 	{

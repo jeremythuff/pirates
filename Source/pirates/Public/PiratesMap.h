@@ -29,7 +29,7 @@ class PIRATES_API IPiratesMap
 public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="PiratesMap")
-		TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
+	TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
 
 
 };
