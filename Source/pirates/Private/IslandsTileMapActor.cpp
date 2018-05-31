@@ -5,7 +5,7 @@
 #include "PaperTileMapComponent.h"
 
 // Sets default values
-AIslandsTileMapActor::AIslandsTileMapActor()
+AIslandsTileMapActor::AIslandsTileMapActor() : Super()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;

@@ -35,7 +35,7 @@ public:
 
 	void Init();
 
-	UFUNCTION(BlueprintCallable, Category = "PiratesMap", meta = (DefaultToSelf = "Controller"))
+	UFUNCTION(BlueprintCallable, Category = "PiratesMap|Procedural Generation", meta = (DefaultToSelf = "Controller"))
 	void Generate();
 
 protected:
