@@ -9,11 +9,13 @@
 #include "PaperTileSet.h"
 #include "Perlin.h"
 #include "IslandsTileMapActor.h"
-#include "PiratesMap.h"
+
 #include "ProceduralIslandsTileMapActor.generated.h"
 
 typedef std::vector<float> Vector;
 typedef std::vector<Vector> Matrix;
+
+DECLARE_LOG_CATEGORY_EXTERN(ProceduralLog, Log, All);
 
 UCLASS()
 class PIRATES_API AProceduralIslandsTileMapActor : public AIslandsTileMapActor
@@ -27,21 +29,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void PostInitProperties() override;
+	virtual void PostRegisterAllComponents() override;
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;
 #endif
-
 
 	void Init();
 
 	void Generate();
 
 protected:
-	/** The base tile set used in map generation. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
-	class UPaperTileSet *BaseTileSet;
+	class UPaperTileSet *TileSet;
 
 	/** The number of rows the generated map should have. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
@@ -65,7 +65,7 @@ protected:
 
 	/** Whether to use absolute perlin result. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "100"))
-	int Density = 0;
+	int Density = 100;
 
 	/** The sea level. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
@@ -81,36 +81,32 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 	TMap<FString, FString> LandEdgeMap = InitialLandEdgeMap();
 
-	// TODO: remove when complete
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 	TMap<FString, FString> Edges = InitialEdges();
-
-	UPROPERTY(Transient, VisibleInstanceOnly, meta = (AllowPrivateAccess = "true"))
-	UPaperTileMap * GeneratedMap;
-
-	#if WITH_EDITOR
-		bool Initialized = false;
-	#endif
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:
+	float Scale = 1000.0f;
+
 	float ShallowsLevel;
 
 	void Resize();
 
+	void Reposition();
+
 	TMap<int32, UPaperTileLayer> IslandLayers;
 
-	Matrix GenerateNoise(int seed);
+	Matrix GenerateNoise();
 
-	Matrix TrimNoise(Matrix noise, float level);
+	Matrix TrimNoise(Matrix Noise, float Level);
 
-	FString GetSurroundings(Matrix noise, int32 x, int32 y, float level);
+	FString GetSurroundings(Matrix Noise, int32 X, int32 Y, float Level);
 
-	Matrix CopyNoise(Matrix noise);
+	Matrix CopyNoise(Matrix Noise);
 
-	void AddTile(int32 x, int32 y, int32 layerIndex, int32 tileIndex);
+	void AddTile(int32 C, int32 Y, int32 LayerIndex, int32 TileIndex);
 
 	FORCEINLINE TMap<FString, FString> InitialEdges()
 	{

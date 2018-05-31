@@ -9,9 +9,9 @@
 #include "PaperTileSet.h"
 #include "PaperTileMapComponent.h"
 #include "PaperTileLayer.h"
+#include "PiratesMap.h"
 #include "UObject/ObjectMacros.h"
 #include "GameFramework/Actor.h"
-#include "PiratesMap.h"
 
 #include "IslandsTileMapActor.generated.h"
 
@@ -24,24 +24,28 @@ public:
 	// Sets default values for this actor's properties
 	AIslandsTileMapActor();
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void PostInitProperties() override;
-
-  /** Impl for FindTileInfoAtWorldLoation from IPiratesMap */
-	UFUNCTION(BlueprintNativeEvent, BlueprintNativeEvent, Category = "PiratesMap")
-		TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
-		virtual TArray<FPaperTileInfo> FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation) override;
-
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;
 #endif
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map", meta = (AllowPrivateAccess = "true"))
-	class UPaperTileMapComponent *BaseTileMap;
+	/** Impl for FindTileInfoAtWorldLoation from IPiratesMap */
+	UFUNCTION(BlueprintNativeEvent, BlueprintNativeEvent, Category = "PiratesMap")
+	TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
+	virtual TArray<FPaperTileInfo> FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation) override;
 
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map", meta = (AllowPrivateAccess = "true"))
+	class UPaperTileMapComponent *TileMapComponent;
+
+protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void PostRegisterAllComponents() override;
+
+	FORCEINLINE class UPaperTileMapComponent *GetTileMapComponent() const { return TileMapComponent; }
 };
