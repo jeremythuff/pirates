@@ -2,77 +2,73 @@
 
 #include "IslandsTileMapActor.h"
 
-#include "PaperFlipbook.h"
-#include "PaperFlipbookComponent.h"
-#include "PaperTileMap.h"
-#include "PaperTileSet.h"
-#include "PaperTileLayer.h"
 #include "PaperTileMapComponent.h"
 
 // Sets default values
-AIslandsTileMapActor::AIslandsTileMapActor()
+AIslandsTileMapActor::AIslandsTileMapActor() : Super()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+  // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+  PrimaryActorTick.bCanEverTick = false;
 
-	RootComponent = BaseTileMap = CreateDefaultSubobject<UPaperTileMapComponent>(TEXT("BaseTileMap"));
+  UE_LOG(LogTemp, Log, TEXT("Creating tile map component..."));
+  RootComponent = TileMapComponent = CreateDefaultSubobject<UPaperTileMapComponent>(TEXT("TileMapComponent"));
 }
 
-// Called every frame
 void AIslandsTileMapActor::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+  Super::Tick(DeltaTime);
 }
 
-void AIslandsTileMapActor::PostInitProperties()
+void AIslandsTileMapActor::PreInitializeComponents()
 {
-	Super::PostInitProperties();
+  Super::PreInitializeComponents();
 }
 
-#if WITH_EDITOR
-void AIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
+void AIslandsTileMapActor::PostInitializeComponents()
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+  Super::PostInitializeComponents();
 }
-#endif
 
+void AIslandsTileMapActor::PostRegisterAllComponents()
+{
+  Super::PostRegisterAllComponents();
+}
 
 TArray<FPaperTileInfo> AIslandsTileMapActor::FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation)
 {
-	TArray<FPaperTileInfo> TilesAtLocation;
+  TArray<FPaperTileInfo> TilesAtLocation;
 
-	UPaperTileMap* TileMap = BaseTileMap->TileMap;
-	int32 MapHeight = TileMap->MapHeight;
-	int32 MapWidth = TileMap->MapWidth;
+  for (auto LayerItr(TileMapComponent->TileMap->TileLayers.CreateIterator()); LayerItr; LayerItr++)
+  {
+    int32 LayerIndex = LayerItr.GetIndex();
+    if (!(*LayerItr)->IsValidLowLevel())
+    {
+      continue;
+    }
 
-	TArray<UPaperTileLayer*> Layers = TileMap->TileLayers;
+    for (int32 TileX = 0; TileX < TileMapComponent->TileMap->MapHeight; TileX++)
+    {
+      for (int32 TileY = 0; TileY < TileMapComponent->TileMap->MapWidth; TileY++)
+      {
+        FVector CenterOfTile = TileMapComponent->GetTileCenterPosition(TileX, TileY, LayerIndex, true);
 
-	for (auto LayerItr(Layers.CreateIterator()); LayerItr; LayerItr++)
-	{
-		int32 LayerIndex = LayerItr.GetIndex();
-		if (!(*LayerItr)->IsValidLowLevel()) continue;
+        if (FVector::DistXY(CenterOfTile, WorldLocation) < TileMapComponent->TileMap->TileWidth / 2)
+        {
+          FPaperTileInfo TileInfo = TileMapComponent->GetTile(TileX, TileY, LayerIndex);
+          if (TileInfo.IsValid())
+          {
+            TilesAtLocation.Add(FPaperTileInfo(TileInfo));
+          }
+        }
+      }
+    }
+  }
 
-		for (int32 TileX = 0; TileX < MapHeight; TileX++) {
-		
-			for (int32 TileY = 0; TileY < MapWidth; TileY++) {
-				
-				FVector CenterOfTile = BaseTileMap->GetTileCenterPosition(TileX, TileY, LayerIndex, true);
-
-				if (FVector::DistXY(CenterOfTile, WorldLocation) < TileMap->TileWidth / 2) {
-					FPaperTileInfo TileInfo = BaseTileMap->GetTile(TileX, TileY, LayerIndex);
-					if (TileInfo.IsValid()) {
-						TilesAtLocation.Add(FPaperTileInfo(TileInfo));
-					}
-				}
-			}
-		}
-	}
-
-	return TilesAtLocation;
+  return TilesAtLocation;
 }
 
 // Called when the game starts or when spawned
 void AIslandsTileMapActor::BeginPlay()
 {
-	Super::BeginPlay();
+  Super::BeginPlay();
 }

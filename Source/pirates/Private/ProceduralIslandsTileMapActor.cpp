@@ -1,253 +1,311 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProceduralIslandsTileMapActor.h"
+#include "ConstructorHelpers.h"
+
+DEFINE_LOG_CATEGORY(ProceduralLog);
 
 // Sets default values
 AProceduralIslandsTileMapActor::AProceduralIslandsTileMapActor() : Super()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+  // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+  PrimaryActorTick.bCanEverTick = false;
 
-	GeneratedMap = CreateDefaultSubobject<UPaperTileMap>(TEXT("Generated Tile Map"));
-	BaseTileMap->SetTileMap(GeneratedMap);
-	
+  static ConstructorHelpers::FObjectFinder<UPaperTileSet> IslandsTileSet(TEXT("/Game/tile_sets/Terrain"));
+  if (IslandsTileSet.Succeeded())
+  {
+    TileSet = IslandsTileSet.Object;
+  }
+
+  static ConstructorHelpers::FObjectFinder<UMaterialInterface> TranslucentUnlitSpriteMaterial(TEXT("/Paper2D/TranslucentUnlitSpriteMaterial"));
+  if (TranslucentUnlitSpriteMaterial.Succeeded())
+  {
+    TileMapComponent->SetMaterial(0, TranslucentUnlitSpriteMaterial.Object);
+  }
 }
 
-// Called every frame
 void AProceduralIslandsTileMapActor::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+  Super::Tick(DeltaTime);
 }
 
-void AProceduralIslandsTileMapActor::PostInitProperties()
+void AProceduralIslandsTileMapActor::PreInitializeComponents()
 {
-	Super::PostInitProperties();
-	Init();
-	Generate();
+  Super::PreInitializeComponents();
 }
 
-#if WITH_EDITOR
-void AProceduralIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
+void AProceduralIslandsTileMapActor::PostInitializeComponents()
 {
-	Generate();
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+  Super::PostInitializeComponents();
 }
-#endif
 
-// Initialize Islands Map
+void AProceduralIslandsTileMapActor::PostRegisterAllComponents()
+{
+  Generate();
+  Super::PostRegisterAllComponents();
+}
+
 void AProceduralIslandsTileMapActor::Init()
 {
-	#if WITH_EDITOR
-	if (!Initialized) {
-		Initialized = true;
-	#endif
-		BaseTileMap->MakeTileMapEditable();
-		BaseTileMap->TileMap->TileLayers.Empty();
+  UE_LOG(ProceduralLog, Log, TEXT("Creating tile map..."));
+  TileMapComponent->CreateNewTileMap(Rows, Columns, TileSet->GetTileSize().X, TileSet->GetTileSize().Y, 1.0f, false);
 
-		UPaperTileLayer *StructuresLayer = BaseTileMap->TileMap->AddNewLayer();
-		StructuresLayer->SetLayerCollides(true);
-		StructuresLayer->LayerName = FText::FromString("Structures");
+  UE_LOG(ProceduralLog, Log, TEXT("Making tile map editable..."));
+  TileMapComponent->MakeTileMapEditable();
 
-		UPaperTileLayer *FoliageLayer = BaseTileMap->TileMap->AddNewLayer();
-		FoliageLayer->SetLayerCollides(true);
-		FoliageLayer->LayerName = FText::FromString("Foliage");
+  TileMapComponent->TileMap->SeparationPerLayer = 5.0f;
 
-		UPaperTileLayer *LandLayer = BaseTileMap->TileMap->AddNewLayer();
-		LandLayer->SetLayerCollides(true);
-		LandLayer->LayerName = FText::FromString("Land");
+  UE_LOG(ProceduralLog, Log, TEXT("Adding layers..."));
 
-		UPaperTileLayer *ShallowsLayer = BaseTileMap->TileMap->AddNewLayer();
-		FLinearColor TransparentColor = FLinearColor(ShallowsLayer->GetLayerColor());
-		TransparentColor.A = 0.9f;
-		ShallowsLayer->SetLayerColor(TransparentColor);
-		ShallowsLayer->SetLayerCollides(false);
-		ShallowsLayer->LayerName = FText::FromString("Shallows");
+  UE_LOG(ProceduralLog, Log, TEXT("Adding structures layer..."));
+  UPaperTileLayer *StructuresLayer = TileMapComponent->TileMap->AddNewLayer();
+  StructuresLayer->SetLayerCollides(true);
+  StructuresLayer->LayerName = FText::FromString("Structures");
 
-		UPaperTileLayer *OceanLayer = BaseTileMap->TileMap->AddNewLayer();
-		OceanLayer->SetLayerCollides(true);
-		OceanLayer->LayerName = FText::FromString("Ocean");
+  UE_LOG(ProceduralLog, Log, TEXT("Adding foliage layer..."));
+  UPaperTileLayer *FoliageLayer = TileMapComponent->TileMap->AddNewLayer();
+  FoliageLayer->SetLayerCollides(true);
+  FoliageLayer->LayerName = FText::FromString("Foliage");
 
-	#if WITH_EDITOR
-	}
-	#endif
+  UE_LOG(ProceduralLog, Log, TEXT("Adding land layer..."));
+  UPaperTileLayer *LandLayer = TileMapComponent->TileMap->AddNewLayer();
+  LandLayer->SetLayerCollides(true);
+  LandLayer->LayerName = FText::FromString("Land");
+
+  UE_LOG(ProceduralLog, Log, TEXT("Adding shallows layer..."));
+  UPaperTileLayer *ShallowsLayer = TileMapComponent->TileMap->AddNewLayer();
+  FLinearColor TransparentColor = FLinearColor(ShallowsLayer->GetLayerColor());
+  TransparentColor.A = 0.9f;
+  ShallowsLayer->SetLayerColor(TransparentColor);
+  ShallowsLayer->SetLayerCollides(false);
+  ShallowsLayer->LayerName = FText::FromString("Shallows");
+
+  UE_LOG(ProceduralLog, Log, TEXT("Adding ocean layer..."));
+  UPaperTileLayer *OceanLayer = TileMapComponent->TileMap->AddNewLayer();
+  OceanLayer->SetLayerCollides(true);
+  OceanLayer->LayerName = FText::FromString("Ocean");
 }
 
 // Generate Islands Map
 void AProceduralIslandsTileMapActor::Generate()
 {
-	if (BaseTileSet)
-	{
+  if (TileSet)
+  {
+    std::srand(Seed);
+    Init();
+    Resize();
+    Reposition();
 
-		if (!BaseTileMap->TileMap) {
-			BaseTileMap->SetTileMap(GeneratedMap);
-		}
-			
-		std::srand(Seed);
-		Resize();
+    UE_LOG(ProceduralLog, Log, TEXT("Generating tiles..."));
+    Matrix Noise = TrimNoise(GenerateNoise(), SeaLevel);
 
-		Matrix noise = TrimNoise(GenerateNoise(Seed), SeaLevel);
+    Matrix ElevatedNoise = CopyNoise(Noise);
 
-		float elevation = 1000.0f;
+    // TMap<FString, FString> Edges = InitialEdges();
 
-		Matrix elevatedNoise = CopyNoise(noise);
+    for (int32 X = 0; X < Rows; X++)
+    {
+      for (int32 Y = 0; Y < Columns; Y++)
+      {
+        AddTile(X, Y, 4, WaterTileIndex);
 
-		// TMap<FString, FString> Edges = InitialEdges();
+        if (Noise[X][Y] > SeaLevel)
+        {
+          FString Surroundings = GetSurroundings(Noise, X, Y, SeaLevel);
+          AddTile(X, Y, 3, FCString::Atoi(*ShallowsEdgeMap.FindRef(Edges.FindRef(Surroundings))));
 
-		for (int32 TileX = 0; TileX < Rows; TileX++)
-		{
-			for (int32 TileY = 0; TileY < Columns; TileY++)
-			{
-				float altitude = noise[TileX][TileY];
+          if (Surroundings.Equals(TEXT("00000000")))
+          {
+            ElevatedNoise[X][Y] += Scale;
 
-				AddTile(TileX, TileY, 4, WaterTileIndex);
+            if (std::rand() % 100 <= ShallowsRockLikelihood * 100)
+            {
+              AddTile(X, Y, 2, ShallowsRockTileIndeces[std::rand() % ShallowsRockTileIndeces.Num()]);
+            }
+          }
+        }
+      }
+    }
 
-				if (altitude > SeaLevel)
-				{
-					FString surroundings = GetSurroundings(noise, TileX, TileY, SeaLevel);
-					AddTile(TileX, TileY, 3, FCString::Atoi(*ShallowsEdgeMap.FindRef(Edges.FindRef(surroundings))));
+    float LandLevel = SeaLevel + Scale;
 
-					if (surroundings.Equals(TEXT("00000000")))
-					{
-						elevatedNoise[TileX][TileY] += elevation;
-					}
-				}
-			}
-		}
+    ElevatedNoise = TrimNoise(ElevatedNoise, LandLevel);
 
-		float LandLevel = SeaLevel + elevation;
+    for (int32 X = 0; X < Rows; X++)
+    {
+      for (int32 Y = 0; Y < Columns; Y++)
+      {
+        if (ElevatedNoise[X][Y] > LandLevel)
+        {
+          FString Surroundings = GetSurroundings(ElevatedNoise, X, Y, LandLevel);
 
-		elevatedNoise = TrimNoise(elevatedNoise, LandLevel);
+          int32 TileIndex;
 
-		for (int32 TileX = 0; TileX < Rows; TileX++)
-		{
-			for (int32 TileY = 0; TileY < Columns; TileY++)
-			{
-				float altitude = elevatedNoise[TileX][TileY];
+          if (Surroundings.Equals(TEXT("00000000")))
+          {
+            ElevatedNoise[X][Y] += Scale;
+            TileIndex = GrassTileIndeces[std::rand() % GrassTileIndeces.Num()];
+          }
+          else
+          {
+            TileIndex = FCString::Atoi(*LandEdgeMap.FindRef(Edges.FindRef(Surroundings)));
+          }
 
-				if (altitude > LandLevel)
-				{
-					FString surroundings = GetSurroundings(elevatedNoise, TileX, TileY, LandLevel);
-					AddTile(TileX, TileY, 2, FCString::Atoi(*LandEdgeMap.FindRef(Edges.FindRef(surroundings))));
-				}
-			}
-		}
+          AddTile(X, Y, 2, TileIndex);
+        }
+      }
+    }
 
-		BaseTileMap->RebuildCollision();
-	}
+    float FoliageLevel = LandLevel + Scale;
+
+    ElevatedNoise = TrimNoise(ElevatedNoise, FoliageLevel);
+
+    for (int32 X = 0; X < Rows; X++)
+    {
+      for (int32 Y = 0; Y < Columns; Y++)
+      {
+        if (ElevatedNoise[X][Y] > FoliageLevel)
+        {
+          FString Surroundings = GetSurroundings(ElevatedNoise, X, Y, FoliageLevel);
+
+          if (Surroundings.Equals(TEXT("00000000")))
+          {
+            AddTile(X, Y, 1, FoilageTileIndeces[std::rand() % FoilageTileIndeces.Num()]);
+          }
+          else
+          {
+            AddTile(X, Y, 2, GrassTileIndeces[std::rand() % GrassTileIndeces.Num()]);
+          }
+        }
+      }
+    }
+
+    UE_LOG(ProceduralLog, Log, TEXT("Rebuilding collision..."));
+    TileMapComponent->RebuildCollision();
+  }
+  else
+  {
+    UE_LOG(ProceduralLog, Log, TEXT("No tile set..."));
+  }
 }
 
 // Called when the game starts or when spawned
 void AProceduralIslandsTileMapActor::BeginPlay()
 {
-	Super::BeginPlay();
+  Super::BeginPlay();
 }
 
 void AProceduralIslandsTileMapActor::Resize()
 {
-	BaseTileMap->ResizeMap(0, 0);
-	BaseTileMap->ResizeMap(Rows, Columns);
-
-	BaseTileMap->TileMap->SeparationPerLayer = 5.0f;
-
-	BaseTileMap->TileMap->TileWidth = BaseTileSet->GetTileSize().X;
-	BaseTileMap->TileMap->TileHeight = BaseTileSet->GetTileSize().Y;
-	
+  UE_LOG(ProceduralLog, Log, TEXT("Resizing map..."));
+  TileMapComponent->ResizeMap(0, 0);
+  TileMapComponent->ResizeMap(Rows, Columns);
 }
 
-Matrix AProceduralIslandsTileMapActor::GenerateNoise(int seed)
+void AProceduralIslandsTileMapActor::Reposition()
 {
-	Perlin::Reseed(seed);
-	int c = 0;
-	Matrix noise;
-	noise.resize(Rows);
-	for (int x = 0; x < Rows; x++)
-	{
-		noise[x].resize(Columns);
-		for (int y = 0; y < Columns; y++)
-		{
-			float fx = (float)Rows / Frequency;
-			float fy = (float)Columns / Frequency;
-			float n = Perlin::Noise((float)x / fx, (float)y / fy, Octaves) * 1000.0f;
-			noise[x][y] = Density > c++ ? std::abs(n) : n;
-			if (c > 100)
-			{
-				c = 0;
-			}
-		}
-	}
-	return noise;
+  UE_LOG(ProceduralLog, Log, TEXT("Repositioning map..."));
+  float MapWidth = (float)Columns * (float)TileSet->GetTileSize().X;
+  float MapHeight = (float)Rows * (float)TileSet->GetTileSize().Y;
+
+  TileMapComponent->SetRelativeRotation(FRotator(0.0f, 90.0f, -90.0f));
+  TileMapComponent->SetRelativeLocation(FVector(MapWidth, (MapWidth / 2.0f) * (-1.0f), 0.0f));
 }
 
-Matrix AProceduralIslandsTileMapActor::TrimNoise(Matrix noise, float level)
+Matrix AProceduralIslandsTileMapActor::GenerateNoise()
 {
-	for (int32 i = 0; i < 12; i++)
-	{
-		for (int32 TileX = 0; TileX < Rows; TileX++)
-		{
-			for (int32 TileY = 0; TileY < Columns; TileY++)
-			{
-				if (TileX > 0 && TileX < Rows - 1 && TileY > 0 && TileY < Columns - 1)
-				{
-					if (noise[TileX + 1][TileY + 1] < level && noise[TileX - 1][TileY - 1] < level)
-					{
-						noise[TileX][TileY] = level - 1.0f;
-					}
-					if (noise[TileX + 1][TileY - 1] < level && noise[TileX - 1][TileY + 1] < level)
-					{
-						noise[TileX][TileY] = level - 1.0f;
-					}
-				}
-				if (TileX > 0 && TileX < Rows - 1 && noise[TileX + 1][TileY] < level && noise[TileX - 1][TileY] < level)
-				{
-					noise[TileX][TileY] = level - 1.0f;
-				}
-				if (TileY > 0 && TileY < Columns - 1 && noise[TileX][TileY + 1] < level && noise[TileX][TileY - 1] < level)
-				{
-					noise[TileX][TileY] = level - 1.0f;
-				}
-			}
-		}
-	}
-	return noise;
+  Perlin::Reseed(Seed);
+  int C = 0;
+  Matrix Noise;
+  Noise.resize(Rows);
+  for (int X = 0; X < Rows; X++)
+  {
+    Noise[X].resize(Columns);
+    for (int Y = 0; Y < Columns; Y++)
+    {
+      float fx = (float)Rows / Frequency;
+      float fy = (float)Columns / Frequency;
+      float n = Perlin::Noise((float)X / fx, (float)Y / fy, Octaves) * Scale;
+      Noise[X][Y] = Density > C++ ? std::abs(n) : n;
+      if (C > 100)
+      {
+        C = 0;
+      }
+    }
+  }
+  return Noise;
 }
 
-FString AProceduralIslandsTileMapActor::GetSurroundings(Matrix noise, int32 x, int32 y, float level)
+Matrix AProceduralIslandsTileMapActor::TrimNoise(Matrix Noise, float Level)
 {
-	int top = (x == 0) ? x : x - 1;
-	int bottom = (x == Rows - 1) ? x : x + 1;
-	int left = (y == 0) ? y : y - 1;
-	int right = (y == Columns - 1) ? y : y + 1;
-	FString surroundings = TEXT("");
-	surroundings += noise[top][left] <= level ? TEXT("1") : TEXT("0");
-	surroundings += noise[top][y] <= level ? TEXT("1") : TEXT("0");
-	surroundings += noise[top][right] <= level ? TEXT("1") : TEXT("0");
-	surroundings += noise[x][right] <= level ? TEXT("1") : TEXT("0");
-	surroundings += noise[bottom][right] <= level ? TEXT("1") : TEXT("0");
-	surroundings += noise[bottom][y] <= level ? TEXT("1") : TEXT("0");
-	surroundings += noise[bottom][left] <= level ? TEXT("1") : TEXT("0");
-	surroundings += noise[x][left] <= level ? TEXT("1") : TEXT("0");
-	return surroundings;
+  for (int32 i = 0; i < 12; i++)
+  {
+    for (int32 X = 0; X < Rows; X++)
+    {
+      for (int32 Y = 0; Y < Columns; Y++)
+      {
+        if (X > 0 && X < Rows - 1 && Y > 0 && Y < Columns - 1)
+        {
+          if (Noise[X + 1][Y + 1] < Level && Noise[X - 1][Y - 1] < Level)
+          {
+            Noise[X][Y] = Level - 1.0f;
+          }
+          if (Noise[X + 1][Y - 1] < Level && Noise[X - 1][Y + 1] < Level)
+          {
+            Noise[X][Y] = Level - 1.0f;
+          }
+        }
+        if (X > 0 && X < Rows - 1 && Noise[X + 1][Y] < Level && Noise[X - 1][Y] < Level)
+        {
+          Noise[X][Y] = Level - 1.0f;
+        }
+        if (Y > 0 && Y < Columns - 1 && Noise[X][Y + 1] < Level && Noise[X][Y - 1] < Level)
+        {
+          Noise[X][Y] = Level - 1.0f;
+        }
+      }
+    }
+  }
+  return Noise;
 }
 
-Matrix AProceduralIslandsTileMapActor::CopyNoise(Matrix noise)
+FString AProceduralIslandsTileMapActor::GetSurroundings(Matrix Noise, int32 X, int32 Y, float Level)
 {
-	Matrix copy;
-	copy.resize(noise.size());
-	for (int x = 0; x < noise.size(); x++)
-	{
-		copy[x].resize(noise[x].size());
-		for (int y = 0; y < noise[x].size(); y++)
-		{
-			copy[x][y] = noise[x][y];
-		}
-	}
-	return copy;
+  int Top = (X == 0) ? X : X - 1;
+  int Bottom = (X == Rows - 1) ? X : X + 1;
+  int Left = (Y == 0) ? Y : Y - 1;
+  int Right = (Y == Columns - 1) ? Y : Y + 1;
+  FString Surroundings = TEXT("");
+  Surroundings += Noise[Top][Left] <= Level ? TEXT("1") : TEXT("0");
+  Surroundings += Noise[Top][Y] <= Level ? TEXT("1") : TEXT("0");
+  Surroundings += Noise[Top][Right] <= Level ? TEXT("1") : TEXT("0");
+  Surroundings += Noise[X][Right] <= Level ? TEXT("1") : TEXT("0");
+  Surroundings += Noise[Bottom][Right] <= Level ? TEXT("1") : TEXT("0");
+  Surroundings += Noise[Bottom][Y] <= Level ? TEXT("1") : TEXT("0");
+  Surroundings += Noise[Bottom][Left] <= Level ? TEXT("1") : TEXT("0");
+  Surroundings += Noise[X][Left] <= Level ? TEXT("1") : TEXT("0");
+  return Surroundings;
 }
 
-void AProceduralIslandsTileMapActor::AddTile(int32 x, int32 y, int32 layerIndex, int32 tileIndex)
+Matrix AProceduralIslandsTileMapActor::CopyNoise(Matrix Noise)
 {
-	FPaperTileInfo tile;
-	tile.TileSet = BaseTileSet;
-	tile.PackedTileIndex = tileIndex;
-	BaseTileMap->SetTile(x, y, layerIndex, tile);
+  Matrix Copy;
+  Copy.resize(Noise.size());
+  for (int X = 0; X < Noise.size(); X++)
+  {
+    Copy[X].resize(Noise[X].size());
+    for (int Y = 0; Y < Noise[X].size(); Y++)
+    {
+      Copy[X][Y] = Noise[X][Y];
+    }
+  }
+  return Copy;
+}
+
+void AProceduralIslandsTileMapActor::AddTile(int32 X, int32 Y, int32 LayerIndex, int32 TileIndex)
+{
+  FPaperTileInfo Tile;
+  Tile.TileSet = TileSet;
+  Tile.PackedTileIndex = TileIndex;
+  TileMapComponent->SetTile(X, Y, LayerIndex, Tile);
 }
