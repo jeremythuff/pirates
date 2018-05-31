@@ -7,70 +7,65 @@
 // Sets default values
 AIslandsTileMapActor::AIslandsTileMapActor() : Super()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+  // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+  PrimaryActorTick.bCanEverTick = false;
 
-	UE_LOG(LogTemp, Log, TEXT("Creating tile map component..."));
-	TileMapComponent = CreateDefaultSubobject<UPaperTileMapComponent>(TEXT("TileMapComponent"));
+  UE_LOG(LogTemp, Log, TEXT("Creating tile map component..."));
+  RootComponent = TileMapComponent = CreateDefaultSubobject<UPaperTileMapComponent>(TEXT("TileMapComponent"));
 }
 
 // Called every frame
 void AIslandsTileMapActor::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-}
-
-void AIslandsTileMapActor::PostRegisterAllComponents()
-{
-	Super::PostRegisterAllComponents();
+  Super::Tick(DeltaTime);
 }
 
 #if WITH_EDITOR
 void AIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+  Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 #endif
 
 TArray<FPaperTileInfo> AIslandsTileMapActor::FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation)
 {
-	TArray<FPaperTileInfo> TilesAtLocation;
+  TArray<FPaperTileInfo> TilesAtLocation;
 
-	UPaperTileMap* TileMap = TileMapComponent->TileMap;
+  UPaperTileMap *TileMap = TileMapComponent->TileMap;
 
-	TArray<UPaperTileLayer*> Layers = TileMap->TileLayers;
+  TArray<UPaperTileLayer *> Layers = TileMap->TileLayers;
 
-	for (auto LayerItr(Layers.CreateIterator()); LayerItr; LayerItr++)
-	{
-		int32 LayerIndex = LayerItr.GetIndex();
-		if (!(*LayerItr)->IsValidLowLevel())
-		{
-			continue;
-		}
+  for (auto LayerItr(Layers.CreateIterator()); LayerItr; LayerItr++)
+  {
+    int32 LayerIndex = LayerItr.GetIndex();
+    if (!(*LayerItr)->IsValidLowLevel())
+    {
+      continue;
+    }
 
-		for (int32 TileX = 0; TileX < TileMap->MapHeight; TileX++)
-		{
-			for (int32 TileY = 0; TileY < TileMap->MapWidth; TileY++)
-			{
-				FVector CenterOfTile = TileMapComponent->GetTileCenterPosition(TileX, TileY, LayerIndex, true);
+    for (int32 TileX = 0; TileX < TileMap->MapHeight; TileX++)
+    {
+      for (int32 TileY = 0; TileY < TileMap->MapWidth; TileY++)
+      {
+        FVector CenterOfTile = TileMapComponent->GetTileCenterPosition(TileX, TileY, LayerIndex, true);
 
-				if (FVector::DistXY(CenterOfTile, WorldLocation) < TileMap->TileWidth / 2)
-				{
-					FPaperTileInfo TileInfo = TileMapComponent->GetTile(TileX, TileY, LayerIndex);
-					if (TileInfo.IsValid())
-					{
-						TilesAtLocation.Add(FPaperTileInfo(TileInfo));
-					}
-				}
-			}
-		}
-	}
+        if (FVector::DistXY(CenterOfTile, WorldLocation) < TileMap->TileWidth / 2)
+        {
+          FPaperTileInfo TileInfo = TileMapComponent->GetTile(TileX, TileY, LayerIndex);
+          if (TileInfo.IsValid())
+          {
+            TilesAtLocation.Add(FPaperTileInfo(TileInfo));
+          }
+        }
+      }
+    }
+  }
 
-	return TilesAtLocation;
+  return TilesAtLocation;
 }
 
 // Called when the game starts or when spawned
 void AIslandsTileMapActor::BeginPlay()
 {
-	Super::BeginPlay();
+  Super::BeginPlay();
 }
