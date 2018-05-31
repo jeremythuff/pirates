@@ -75,7 +75,7 @@ protected:
 
 	/** The likelyhood of a shallow rock. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "1"))
-	float ShallowsRockLikelyhood = 0.025f;
+	float ShallowsRockLikelihood = 0.025f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
 	TArray<int32> ShallowsRockTileIndeces = InitialShallowsRockTileIndeces();

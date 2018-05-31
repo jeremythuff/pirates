@@ -127,7 +127,7 @@ void AProceduralIslandsTileMapActor::Generate()
 					{
 						ElevatedNoise[X][Y] += Scale;
 
-						if (std::rand() % 100 <= ShallowsRockLikelyhood * 100) {
+						if (std::rand() % 100 <= ShallowsRockLikelihood * 100) {
 							AddTile(X, Y, 2, ShallowsRockTileIndeces[std::rand() % ShallowsRockTileIndeces.Num()]);
 						}
 					}
