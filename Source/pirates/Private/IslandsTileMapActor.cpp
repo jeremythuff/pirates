@@ -14,28 +14,31 @@ AIslandsTileMapActor::AIslandsTileMapActor() : Super()
   RootComponent = TileMapComponent = CreateDefaultSubobject<UPaperTileMapComponent>(TEXT("TileMapComponent"));
 }
 
-// Called every frame
 void AIslandsTileMapActor::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
 }
 
-#if WITH_EDITOR
-void AIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
+void AIslandsTileMapActor::PreInitializeComponents()
 {
-  Super::PostEditChangeProperty(PropertyChangedEvent);
+  Super::PreInitializeComponents();
 }
-#endif
+
+void AIslandsTileMapActor::PostInitializeComponents()
+{
+  Super::PostInitializeComponents();
+}
+
+void AIslandsTileMapActor::PostRegisterAllComponents()
+{
+  Super::PostRegisterAllComponents();
+}
 
 TArray<FPaperTileInfo> AIslandsTileMapActor::FindTileInfoAtWorldLoation_Implementation(FVector WorldLocation)
 {
   TArray<FPaperTileInfo> TilesAtLocation;
 
-  UPaperTileMap *TileMap = TileMapComponent->TileMap;
-
-  TArray<UPaperTileLayer *> Layers = TileMap->TileLayers;
-
-  for (auto LayerItr(Layers.CreateIterator()); LayerItr; LayerItr++)
+  for (auto LayerItr(TileMapComponent->TileMap->TileLayers.CreateIterator()); LayerItr; LayerItr++)
   {
     int32 LayerIndex = LayerItr.GetIndex();
     if (!(*LayerItr)->IsValidLowLevel())
@@ -43,13 +46,13 @@ TArray<FPaperTileInfo> AIslandsTileMapActor::FindTileInfoAtWorldLoation_Implemen
       continue;
     }
 
-    for (int32 TileX = 0; TileX < TileMap->MapHeight; TileX++)
+    for (int32 TileX = 0; TileX < TileMapComponent->TileMap->MapHeight; TileX++)
     {
-      for (int32 TileY = 0; TileY < TileMap->MapWidth; TileY++)
+      for (int32 TileY = 0; TileY < TileMapComponent->TileMap->MapWidth; TileY++)
       {
         FVector CenterOfTile = TileMapComponent->GetTileCenterPosition(TileX, TileY, LayerIndex, true);
 
-        if (FVector::DistXY(CenterOfTile, WorldLocation) < TileMap->TileWidth / 2)
+        if (FVector::DistXY(CenterOfTile, WorldLocation) < TileMapComponent->TileMap->TileWidth / 2)
         {
           FPaperTileInfo TileInfo = TileMapComponent->GetTile(TileX, TileY, LayerIndex);
           if (TileInfo.IsValid())

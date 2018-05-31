@@ -24,78 +24,75 @@ public:
   // Sets Default values for this actor"s properties
   AProceduralIslandsTileMapActor();
 
-  // Called every frame
   virtual void Tick(float DeltaTime) override;
 
   virtual void PreInitializeComponents() override;
 
   virtual void PostInitializeComponents() override;
 
-  // #if WITH_EDITOR
-  //   virtual void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;
-  // #endif
+  virtual void PostRegisterAllComponents() override;
 
   void Init();
 
-  UFUNCTION(BlueprintCallable, Category = "PiratesMap|Procedural Generation", meta = (DefaultToSelf = "Controller"))
+  UFUNCTION(BlueprintCallable, Category = "ProceduralMap")
   void Generate();
 
 protected:
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   class UPaperTileSet *TileSet;
 
   /** The number of rows the generated map should have. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   int32 Rows = 128;
 
   /** The number of columns the generated map should have. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   int32 Columns = 128;
 
   /** The random seed for perlin noise. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   int Seed = 1;
 
   /** The frequency for perlin noise. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   float Frequency = 12.0f;
 
   /** The octaves for perlin noise. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   int Octaves = 1;
 
   /** Whether to use absolute perlin result. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "100"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "100"))
   int Density = 100;
 
   /** The sea level. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   float SeaLevel = 100.0f;
 
   /** The water tile index. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   int32 WaterTileIndex = 104;
 
   /** The likelyhood of a shallow rock. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "1"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "1"))
   float ShallowsRockLikelihood = 0.025f;
 
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   TArray<int32> ShallowsRockTileIndeces = InitialShallowsRockTileIndeces();
 
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   TArray<int32> GrassTileIndeces = InitialGrassTileIndices();
 
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   TArray<int32> FoilageTileIndeces = InitialFoliageTileIndices();
 
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   TMap<FString, FString> ShallowsEdgeMap = InitialShallowsEdgeMap();
 
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   TMap<FString, FString> LandEdgeMap = InitialLandEdgeMap();
 
-  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Map|Procedural Generation", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   TMap<FString, FString> Edges = InitialEdges();
 
   // Called when the game starts or when spawned

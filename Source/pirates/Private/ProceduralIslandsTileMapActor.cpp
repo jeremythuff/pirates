@@ -11,26 +11,19 @@ AProceduralIslandsTileMapActor::AProceduralIslandsTileMapActor() : Super()
   // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
   PrimaryActorTick.bCanEverTick = false;
 
-  UE_LOG(ProceduralLog, Log, TEXT("Creating tile map..."));
-  UPaperTileMap *GeneratedMap = CreateDefaultSubobject<UPaperTileMap>(TEXT("GeneratedMap"));
-
-  UE_LOG(ProceduralLog, Log, TEXT("Setting tile map..."));
-  TileMapComponent->SetTileMap(GeneratedMap);
+  static ConstructorHelpers::FObjectFinder<UPaperTileSet> IslandsTileSet(TEXT("/Game/tile_sets/Terrain"));
+  if (IslandsTileSet.Succeeded())
+  {
+    TileSet = IslandsTileSet.Object;
+  }
 
   static ConstructorHelpers::FObjectFinder<UMaterialInterface> TranslucentUnlitSpriteMaterial(TEXT("/Paper2D/TranslucentUnlitSpriteMaterial"));
   if (TranslucentUnlitSpriteMaterial.Succeeded())
   {
     TileMapComponent->SetMaterial(0, TranslucentUnlitSpriteMaterial.Object);
   }
-
-  static ConstructorHelpers::FObjectFinder<UPaperTileSet> IslandsTileSet(TEXT("/Game/tile_sets/Terrain"));
-  if (IslandsTileSet.Succeeded())
-  {
-    TileSet = IslandsTileSet.Object;
-  }
 }
 
-// Called every frame
 void AProceduralIslandsTileMapActor::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
@@ -39,66 +32,58 @@ void AProceduralIslandsTileMapActor::Tick(float DeltaTime)
 void AProceduralIslandsTileMapActor::PreInitializeComponents()
 {
   Super::PreInitializeComponents();
-  Init();
 }
 
 void AProceduralIslandsTileMapActor::PostInitializeComponents()
 {
-  Generate();
   Super::PostInitializeComponents();
 }
 
-// #if WITH_EDITOR
-// void AProceduralIslandsTileMapActor::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
-// {
-//   Super::PostEditChangeProperty(PropertyChangedEvent);
-//   Generate();
-// }
-// #endif
+void AProceduralIslandsTileMapActor::PostRegisterAllComponents()
+{
+  Generate();
+  Super::PostRegisterAllComponents();
+}
 
 void AProceduralIslandsTileMapActor::Init()
 {
-  UE_LOG(ProceduralLog, Log, TEXT("Layer count: %d"), TileMapComponent->TileMap->TileLayers.Num());
+  UE_LOG(ProceduralLog, Log, TEXT("Creating tile map..."));
+  TileMapComponent->CreateNewTileMap(Rows, Columns, TileSet->GetTileSize().X, TileSet->GetTileSize().Y, 1.0f, false);
 
-  if (TileMapComponent->TileMap->TileLayers.Num() != 5)
-  {
+  UE_LOG(ProceduralLog, Log, TEXT("Making tile map editable..."));
+  TileMapComponent->MakeTileMapEditable();
 
-    UE_LOG(ProceduralLog, Log, TEXT("Making tile map editable..."));
+  TileMapComponent->TileMap->SeparationPerLayer = 5.0f;
 
-    TileMapComponent->MakeTileMapEditable();
+  UE_LOG(ProceduralLog, Log, TEXT("Adding layers..."));
 
-    TileMapComponent->TileMap->TileLayers.Empty();
+  UE_LOG(ProceduralLog, Log, TEXT("Adding structures layer..."));
+  UPaperTileLayer *StructuresLayer = TileMapComponent->TileMap->AddNewLayer();
+  StructuresLayer->SetLayerCollides(true);
+  StructuresLayer->LayerName = FText::FromString("Structures");
 
-    UE_LOG(ProceduralLog, Log, TEXT("Adding layers..."));
+  UE_LOG(ProceduralLog, Log, TEXT("Adding foliage layer..."));
+  UPaperTileLayer *FoliageLayer = TileMapComponent->TileMap->AddNewLayer();
+  FoliageLayer->SetLayerCollides(true);
+  FoliageLayer->LayerName = FText::FromString("Foliage");
 
-    UE_LOG(ProceduralLog, Log, TEXT("Adding structures layer..."));
-    UPaperTileLayer *StructuresLayer = TileMapComponent->TileMap->AddNewLayer();
-    StructuresLayer->SetLayerCollides(true);
-    StructuresLayer->LayerName = FText::FromString("Structures");
+  UE_LOG(ProceduralLog, Log, TEXT("Adding land layer..."));
+  UPaperTileLayer *LandLayer = TileMapComponent->TileMap->AddNewLayer();
+  LandLayer->SetLayerCollides(true);
+  LandLayer->LayerName = FText::FromString("Land");
 
-    UE_LOG(ProceduralLog, Log, TEXT("Adding foliage layer..."));
-    UPaperTileLayer *FoliageLayer = TileMapComponent->TileMap->AddNewLayer();
-    FoliageLayer->SetLayerCollides(true);
-    FoliageLayer->LayerName = FText::FromString("Foliage");
+  UE_LOG(ProceduralLog, Log, TEXT("Adding shallows layer..."));
+  UPaperTileLayer *ShallowsLayer = TileMapComponent->TileMap->AddNewLayer();
+  FLinearColor TransparentColor = FLinearColor(ShallowsLayer->GetLayerColor());
+  TransparentColor.A = 0.9f;
+  ShallowsLayer->SetLayerColor(TransparentColor);
+  ShallowsLayer->SetLayerCollides(false);
+  ShallowsLayer->LayerName = FText::FromString("Shallows");
 
-    UE_LOG(ProceduralLog, Log, TEXT("Adding land layer..."));
-    UPaperTileLayer *LandLayer = TileMapComponent->TileMap->AddNewLayer();
-    LandLayer->SetLayerCollides(true);
-    LandLayer->LayerName = FText::FromString("Land");
-
-    UE_LOG(ProceduralLog, Log, TEXT("Adding shallows layer..."));
-    UPaperTileLayer *ShallowsLayer = TileMapComponent->TileMap->AddNewLayer();
-    FLinearColor TransparentColor = FLinearColor(ShallowsLayer->GetLayerColor());
-    TransparentColor.A = 0.9f;
-    ShallowsLayer->SetLayerColor(TransparentColor);
-    ShallowsLayer->SetLayerCollides(false);
-    ShallowsLayer->LayerName = FText::FromString("Shallows");
-
-    UE_LOG(ProceduralLog, Log, TEXT("Adding ocean layer..."));
-    UPaperTileLayer *OceanLayer = TileMapComponent->TileMap->AddNewLayer();
-    OceanLayer->SetLayerCollides(true);
-    OceanLayer->LayerName = FText::FromString("Ocean");
-  }
+  UE_LOG(ProceduralLog, Log, TEXT("Adding ocean layer..."));
+  UPaperTileLayer *OceanLayer = TileMapComponent->TileMap->AddNewLayer();
+  OceanLayer->SetLayerCollides(true);
+  OceanLayer->LayerName = FText::FromString("Ocean");
 }
 
 // Generate Islands Map
@@ -106,11 +91,12 @@ void AProceduralIslandsTileMapActor::Generate()
 {
   if (TileSet)
   {
-    UE_LOG(ProceduralLog, Log, TEXT("Generating map..."));
     std::srand(Seed);
+    Init();
     Resize();
     Reposition();
 
+    UE_LOG(ProceduralLog, Log, TEXT("Generating tiles..."));
     Matrix Noise = TrimNoise(GenerateNoise(), SeaLevel);
 
     Matrix ElevatedNoise = CopyNoise(Noise);
@@ -199,7 +185,7 @@ void AProceduralIslandsTileMapActor::Generate()
   }
   else
   {
-    UE_LOG(ProceduralLog, Log, TEXT("Tile set not set..."));
+    UE_LOG(ProceduralLog, Log, TEXT("No tile set..."));
   }
 }
 
@@ -211,18 +197,14 @@ void AProceduralIslandsTileMapActor::BeginPlay()
 
 void AProceduralIslandsTileMapActor::Resize()
 {
-
+  UE_LOG(ProceduralLog, Log, TEXT("Resizing map..."));
   TileMapComponent->ResizeMap(0, 0);
   TileMapComponent->ResizeMap(Rows, Columns);
-
-  TileMapComponent->TileMap->SeparationPerLayer = 5.0f;
-
-  TileMapComponent->TileMap->TileWidth = TileSet->GetTileSize().X;
-  TileMapComponent->TileMap->TileHeight = TileSet->GetTileSize().Y;
 }
 
 void AProceduralIslandsTileMapActor::Reposition()
 {
+  UE_LOG(ProceduralLog, Log, TEXT("Repositioning map..."));
   float MapWidth = (float)Columns * (float)TileSet->GetTileSize().X;
   float MapHeight = (float)Rows * (float)TileSet->GetTileSize().Y;
 

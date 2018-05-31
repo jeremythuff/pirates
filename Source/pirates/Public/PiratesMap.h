@@ -27,8 +27,6 @@ class PIRATES_API IPiratesMap
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="PiratesMap")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PiratesMap")
 	TArray<FPaperTileInfo> FindTileInfoAtWorldLoation(FVector WorldLocation);
-
 };
