@@ -11,18 +11,11 @@
 class PIRATES_API Perlin
 {
 public:
-  Perlin();
-  ~Perlin();
-
-  static void Reseed(const int s);
-
   static float Noise(const float x, const float y);
 
   static float Noise(const float x, const float y, const float z);
 
-  static float Noise(float x, float y, const int octaves);
-
-  static float Noise(float x, float y, float z, const int octaves);
+  static float InverseLerp(const float t, const float a, const float b);
 
 private:
   static int mask;
