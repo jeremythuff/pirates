@@ -9,6 +9,11 @@ int Perlin::size = mask + 1;
 
 std::array<uint_fast8_t, 512> Perlin::perm = InitPerm();
 
+float Perlin::InverseLerp(const float t, const float a, const float b)
+{
+	return (b - t) / (a - t);
+}
+
 float Perlin::Fade(const float t)
 {
   return pow(t, 3) * (t * (t * 6 - 15) + 10);
@@ -25,16 +30,6 @@ float Perlin::Grad(const int hash, const float x, const float y, const float z)
   const auto u = h < 8 ? x : y,
              v = h < 4 ? y : h == 12 || h == 14 ? x : z;
   return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-}
-
-void Perlin::Reseed(const int seed)
-{
-  perm = InitPerm();
-  std::shuffle(perm.begin(), perm.begin() + size, std::default_random_engine(seed));
-  for (size_t i = 0; i < size; ++i)
-  {
-    perm[size + i] = perm[i];
-  }
 }
 
 float Perlin::Noise(const float x, const float y)
@@ -112,24 +107,4 @@ float Perlin::Noise(const float x, const float y, const float z)
                           sub_x - 1,
                           sub_y - 1,
                           sub_z - 1))));
-}
-
-float Perlin::Noise(float x, float y, const int octaves)
-{
-  return Noise(x, y, 0.0f, octaves);
-}
-
-float Perlin::Noise(float x, float y, float z, const int octaves)
-{
-  float result = 0.0f;
-  float amp = 1.0f;
-  for (int i = 0; i < octaves; ++i)
-  {
-    result += Noise(x, y, z) * amp;
-    x *= 2.0f;
-    y *= 2.0f;
-    z *= 2.0f;
-    amp *= 0.5f;
-  }
-  return result;
 }
