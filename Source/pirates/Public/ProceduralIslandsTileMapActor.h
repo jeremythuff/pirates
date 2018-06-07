@@ -104,6 +104,18 @@ protected:
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   TMap<FString, FString> Edges = InitialEdges();
 
+  /** Whether to use falloff map on noise. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
+  bool UseFalloff = true;
+
+  /** Falloff map formula variable a. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap|Falloff Map", meta = (AllowPrivateAccess = "true"))
+  float A = 32.0f;
+
+  /** Falloff map formula variable b. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap|Falloff Map", meta = (AllowPrivateAccess = "true"))
+  float B = 18.0f;
+
   // Called when the game starts or when spawned
   virtual void BeginPlay() override;
 
@@ -117,6 +129,10 @@ private:
   TMap<int32, UPaperTileLayer> IslandLayers;
 
   Matrix GenerateNoise();
+
+  Matrix ApplyFalloffMap(Matrix Noise);
+
+  float EvaluateFalloff(float value);
 
   Matrix TrimNoise(Matrix Noise, float Level);
 
