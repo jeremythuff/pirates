@@ -102,6 +102,8 @@ void AProceduralIslandsTileMapActor::Generate()
 
     // TMap<FString, FString> Edges = InitialEdges();
 
+	float scalar = 100;
+
     for (int32 x = 0; x < Rows; x++)
     {
       for (int32 y = 0; y < Columns; y++)
@@ -115,7 +117,7 @@ void AProceduralIslandsTileMapActor::Generate()
 
           if (Surroundings.Equals(TEXT("00000000")))
           {
-            ElevatedNoise[x][y] += Scale;
+            ElevatedNoise[x][y] += Scale * scalar;
 
             if (std::rand() % 100 <= ShallowsRockLikelihood * 100)
             {
@@ -126,7 +128,7 @@ void AProceduralIslandsTileMapActor::Generate()
       }
     }
 
-    float LandLevel = SeaLevel + Scale;
+    float LandLevel = SeaLevel + Scale * scalar;
 
     ElevatedNoise = TrimNoise(ElevatedNoise, LandLevel);
 
@@ -155,7 +157,7 @@ void AProceduralIslandsTileMapActor::Generate()
       }
     }
 
-    float FoliageLevel = LandLevel + Scale;
+    float FoliageLevel = LandLevel + Scale * scalar;
 
     ElevatedNoise = TrimNoise(ElevatedNoise, FoliageLevel);
 
@@ -213,13 +215,14 @@ void AProceduralIslandsTileMapActor::Reposition()
 
 Matrix AProceduralIslandsTileMapActor::GenerateNoise()
 {
+  UE_LOG(ProceduralLog, Log, TEXT("Generating noise..."));
   std::srand(Seed);
   std::vector<FVector2D> octavesOffsets;
   octavesOffsets.resize(Octaves);
   for (int i = 0; i < Octaves; i++)
   {
     octavesOffsets[i].X = (std::rand() % (200001) - 100000) + Offset.X;
-    octavesOffsets[i].Y = (std::rand() % (200001) - 100000) + Offset.Y;
+    octavesOffsets[i].Y = (std::rand() % (200001) - 100000) - Offset.Y;
   }
 
   float maxNoiseHeight = std::numeric_limits<float>::min();
@@ -245,8 +248,8 @@ Matrix AProceduralIslandsTileMapActor::GenerateNoise()
 
       for (int i = 0; i < Octaves; i++)
       {
-        float sampleX = (x - halfWidth) / Scale * frequency + octavesOffsets[i].X;
-        float sampleY = (y - halfHeight) / Scale * frequency + octavesOffsets[i].Y;
+        float sampleX = (x - halfWidth + octavesOffsets[i].X) / Scale * frequency;
+        float sampleY = (y - halfHeight + octavesOffsets[i].Y) / Scale * frequency;
 
         float perlinValue = Perlin::Noise(sampleX, sampleY) * 2 - 1;
         noiseHeight += perlinValue * amplitude;
@@ -274,7 +277,43 @@ Matrix AProceduralIslandsTileMapActor::GenerateNoise()
       Noise[x][y] = Perlin::InverseLerp(minNoiseHeight, maxNoiseHeight, Noise[x][y]);
     }
   }
+
+  if (UseFalloff) {
+    Noise = ApplyFalloffMap(Noise);
+  }
+
   return Noise;
+}
+
+Matrix AProceduralIslandsTileMapActor::ApplyFalloffMap(Matrix Noise)
+{
+	UE_LOG(ProceduralLog, Log, TEXT("Applying falloff map..."));
+	for (int x = 0; x < Rows; x++)
+	{
+		for (int y = 0; y < Columns; y++)
+		{
+			float i = x / (float) Rows * 2.0f - 1.0f;
+			float j = y / (float) Columns * 2.0f - 1.0f;
+
+			float value = Noise[x][y] - EvaluateFalloff(std::max(std::abs(i), std::abs(j)));
+
+			if (value < 0) {
+				value = 0.0f;
+			}
+			else if(value > 1) {
+				value = 1.0f;
+			}
+
+			Noise[x][y] = value;
+		}
+	}
+
+	return Noise;
+}
+
+float AProceduralIslandsTileMapActor::EvaluateFalloff(float value)
+{
+  return std::pow(value, A) / (std::pow(value, A) + std::pow(B - B * value, 1));
 }
 
 Matrix AProceduralIslandsTileMapActor::TrimNoise(Matrix Noise, float Level)
