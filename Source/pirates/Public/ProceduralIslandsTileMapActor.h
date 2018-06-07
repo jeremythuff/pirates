@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <limits>
 #include <vector>
 
 #include "CoreMinimal.h"
@@ -42,32 +43,40 @@ protected:
   class UPaperTileSet *TileSet;
 
   /** The number of rows the generated map should have. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "32", ClampMax = "256"))
   int32 Rows = 128;
 
   /** The number of columns the generated map should have. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "32", ClampMax = "256"))
   int32 Columns = 128;
 
-  /** The random seed for perlin noise. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
-  int Seed = 1;
-
-  /** The frequency for perlin noise. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
-  float Frequency = 12.0f;
+  /** The scale for perlin noise. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "1"))
+  float Scale = 12.0f;
 
   /** The octaves for perlin noise. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
-  int Octaves = 1;
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "0"))
+  int Octaves = 3;
 
-  /** Whether to use absolute perlin result. */
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "100"))
-  int Density = 100;
+  /** The persistance for perlin noise. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "1"))
+  float Persistance = 0.25f;
+
+  /** The lacunarity for perlin noise. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "1"))
+  float Lacunarity = 1.85f;
+
+  /** The random seed for perlin noise. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true", ClampMin = "1"))
+  int Seed = 1;
+
+  /** The offset for perlin noise. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
+  FVector2D Offset = FVector2D(0.5f, 0.5f);
 
   /** The sea level. */
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
-  float SeaLevel = 100.0f;
+  float SeaLevel = 0.525f;
 
   /** The water tile index. */
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
@@ -95,12 +104,22 @@ protected:
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
   TMap<FString, FString> Edges = InitialEdges();
 
+  /** Whether to use falloff map on noise. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap", meta = (AllowPrivateAccess = "true"))
+  bool UseFalloff = true;
+
+  /** Falloff map formula variable a. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap|Falloff Map", meta = (AllowPrivateAccess = "true"))
+  float A = 32.0f;
+
+  /** Falloff map formula variable b. */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProceduralMap|Falloff Map", meta = (AllowPrivateAccess = "true"))
+  float B = 18.0f;
+
   // Called when the game starts or when spawned
   virtual void BeginPlay() override;
 
 private:
-  float Scale = 1000.0f;
-
   float ShallowsLevel;
 
   void Resize();
@@ -110,6 +129,10 @@ private:
   TMap<int32, UPaperTileLayer> IslandLayers;
 
   Matrix GenerateNoise();
+
+  Matrix ApplyFalloffMap(Matrix Noise);
+
+  float EvaluateFalloff(float value);
 
   Matrix TrimNoise(Matrix Noise, float Level);
 
